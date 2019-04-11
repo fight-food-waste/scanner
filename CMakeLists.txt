@@ -11,7 +11,7 @@ PKG_CHECK_MODULES (GTK REQUIRED gtk+-3.0)
 include_directories(${GTK_INCLUDE_DIRS})
 link_directories(${GTK_LIBE_DIRS})
 
-add_executable(ProjetFFW main.c GladeFFW.glade function.c lib.h)
+add_executable(ProjetFFW main.c GladeFFW.glade functions.c functions.h css/global.css)
 
 #add other flags from gtk3
 add_definitions(${GTK_GLFAG_OTHER})

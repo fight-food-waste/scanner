@@ -3,3 +3,4 @@
 void *OnDestroy(GtkWidget *, gpointer);
 void *OpenScan(GtkWidget *, gpointer);
 void *OpenCart(GtkWidget *, gpointer);
+void *ReturnCart(GtkWidget *, gpointer);
