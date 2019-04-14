@@ -1,7 +1,7 @@
 # Set the name of the project
 project(hello-world C)
 # Set the minimum version of cmake required to build this project
-cmake_minimum_required(VERSION 3.13)
+cmake_minimum_required(VERSION 3.7)
 
 # Use C11 standard
 set(CMAKE_C_STANDARD 11)
