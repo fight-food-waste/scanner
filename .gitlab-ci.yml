@@ -1,11 +1,15 @@
 image: debian:9-slim
 
 stages:
-  - compile
+  - build
 
 make:
-  stage: compile
-  script:
+  stage: build
+  before_script:
    - apt-get update -y
    - apt-get install -y build-essential libgtk-3-dev
-   - make
+  script:
+    - mkdir build
+    - cd build
+    - cmake ../
+    - make

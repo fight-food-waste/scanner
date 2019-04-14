@@ -1,21 +1,25 @@
-cmake_minimum_required(VERSION VERSION 3.13)
-project(ProjetFFW C)
+# Set the name of the project
+project(hello-world C)
+# Set the minimum version of cmake required to build this project
+cmake_minimum_required(VERSION 3.13)
 
-set(CMAKE_C_STANDARD 99)
+# Use C11 standard
+set(CMAKE_C_STANDARD 11)
 
-#use pkg-config tool to detect gtk header and link libe
+# Use the package PkgConfig to detect GTK+ headers/library files
 find_package(PkgConfig REQUIRED)
-PKG_CHECK_MODULES (GTK REQUIRED gtk+-3.0)
+pkg_check_modules(GTK3 REQUIRED gtk+-3.0)
 
-#include gtk3 headers
-include_directories(${GTK_INCLUDE_DIRS})
-link_directories(${GTK_LIBE_DIRS})
+# Tell the compiler where to look for the GTK headers
+include_directories(${GTK3_INCLUDE_DIRS})
+# Tell the linker where to look for GTK libraries
+link_directories(${GTK3_LIBRARY_DIRS})
 
-add_executable(ProjetFFW main.c GladeFFW.glade functions.c functions.h css/global.css)
+# Add other GTK flags to the compiler
+add_definitions(${GTK3_CFLAGS_OTHER})
 
-#add other flags from gtk3
-add_definitions(${GTK_GLFAG_OTHER})
+# Add target 'ffw-scanner' to be build from the other source files
+add_executable(ffw-scanner main.c GladeFFW.glade functions.c functions.h css/global.css)
 
-#link the target to the gtk+ libraries
-target_link_libraries(ProjetFFW ${GTK_LIBRARIES})
-#target_link_libraries(ProjetFFW ${GTK_LIBRARIES} -mwindows)
+# Link the target to the GTK+ libraries
+target_link_libraries(ffw-scanner ${GTK3_LIBRARIES})
