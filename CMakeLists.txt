@@ -19,7 +19,7 @@ link_directories(${GTK3_LIBRARY_DIRS})
 add_definitions(${GTK3_CFLAGS_OTHER})
 
 # Add target 'ffw-scanner' to be build from the other source files
-add_executable(ffw-scanner main.c GladeFFW.glade functions.c functions.h css/global.css)
+add_executable(ffw-scanner main.c gui.glade functions.c functions.h css/global.css)
 
 # Link the target to the GTK+ libraries
 target_link_libraries(ffw-scanner ${GTK3_LIBRARIES})

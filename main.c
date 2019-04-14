@@ -28,7 +28,7 @@ int main(int argc, char **argv)
     gtk_init(&argc, &argv);
 
     builder = gtk_builder_new();
-    gtk_builder_add_from_file(builder, "../GladeFFW.glade", &error);
+    gtk_builder_add_from_file(builder, "../gui.glade", &error);
 
     appliStruct = InitStruct(appliStruct, builder);
 

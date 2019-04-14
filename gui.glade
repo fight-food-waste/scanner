@@ -27,7 +27,7 @@
               <attribute name="weight" value="bold"/>
               <attribute name="scale" value="200"/>
               <attribute name="size" value="100"/>
-              <attribute name="absolute-size" value="200"/>
+              <attribute name="absolute-size" value="200"/>x
             </attributes>
           </object>
           <packing>
