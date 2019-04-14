@@ -6,12 +6,11 @@
 #include <tgmath.h>
 #include "functions.h"
 
-void *OnDestroy(GtkWidget *pWidget, AppliStruct *appliStruct)
-{
+void *OnDestroy(GtkWidget *pWidget, AppliStruct *appliStruct) {
     gtk_main_quit();
 }
 
-AppliStruct *InitStruct (AppliStruct *appliStruct, GtkBuilder* builder){
+AppliStruct *InitStruct(AppliStruct *appliStruct, GtkBuilder *builder) {
     appliStruct = malloc(sizeof(AppliStruct));
     if (appliStruct) {
         appliStruct->mainWindow = GTK_WIDGET(gtk_builder_get_object(builder, "homeWindow"));//Init mainWindow
@@ -20,101 +19,86 @@ AppliStruct *InitStruct (AppliStruct *appliStruct, GtkBuilder* builder){
         appliStruct->scanproduct = GTK_WIDGET(gtk_builder_get_object(builder, "scanWindow"));
         appliStruct->authError = GTK_LABEL(gtk_builder_get_object(builder, "authError"));
 
-    }else {
+    } else {
         printf("Memory not set");
         exit(1);
     }
     return appliStruct;
 }
 
-void *OpenScan(GtkWidget *valideButton, AppliStruct *appliStruct)
-{
+void *OpenScan(GtkWidget *valideButton, AppliStruct *appliStruct) {
     gtk_widget_show_all(appliStruct->scanproduct);
     gtk_widget_hide(appliStruct->mainWindow);
 }
 
-void *OpenCart(GtkWidget *pWidget, gpointer pData)
-{
+void *OpenCart(GtkWidget *pWidget, gpointer pData) {
     GtkWidget *cartResume = NULL;
     GtkWidget *scanproduct = NULL;
-    cartResume = GTK_WIDGET(gtk_builder_get_object((GtkBuilder *)pData, "cartWindow"));
-    scanproduct = GTK_WIDGET(gtk_builder_get_object((GtkBuilder *)pData, "scanWindow"));
+
+    cartResume = GTK_WIDGET(gtk_builder_get_object((GtkBuilder *) pData, "cartWindow"));
+    scanproduct = GTK_WIDGET(gtk_builder_get_object((GtkBuilder *) pData, "scanWindow"));
+
     gtk_widget_show_all(cartResume);
     gtk_widget_hide(scanproduct);
 }
 
-void *ReturnCart (GtkWidget *pWidget, gpointer pData)
-{
+void *ReturnCart(GtkWidget *pWidget, gpointer pData) {
 
     GtkWidget *scanWindow = NULL;
     GtkWidget *cartWindow = NULL;
 
-    scanWindow = GTK_WIDGET(gtk_builder_get_object((GtkBuilder *)pData, "scanWindow"));
-    cartWindow = GTK_WIDGET(gtk_builder_get_object((GtkBuilder *)pData, "cartWindow"));
+    scanWindow = GTK_WIDGET(gtk_builder_get_object((GtkBuilder *) pData, "scanWindow"));
+    cartWindow = GTK_WIDGET(gtk_builder_get_object((GtkBuilder *) pData, "cartWindow"));
+
     gtk_widget_show_all(scanWindow);
     gtk_widget_hide(cartWindow);
 }
 
-int *GetBarreCode (GtkWidget *pwidget, gpointer pData){
+int *GetBarCode(GtkWidget *pwidget, gpointer pData) {
 
     gchar *endPtr;
-
     const gchar *barrecode = gtk_entry_get_text(GTK_ENTRY(pData));
-
     long barrecode_value = strtol(barrecode, &endPtr, 10);
 
-    printf ("%ld", barrecode_value);
+    printf("%ld", barrecode_value);
 
 }
 
-int *GetQuantity (GtkWidget *pwidget, gpointer pData){
+int *GetQuantity(GtkWidget *pwidget, gpointer pData) {
 
     gchar *endPtr;
-
     const gchar *quantity = gtk_entry_get_text(GTK_ENTRY(pData));
-
     long value_quantity = strtol(quantity, &endPtr, 10);
 
-    printf ("\n%ld", value_quantity);
+    printf("\n%ld", value_quantity);
 
 }
 
-void *ErrorLog (GtkLabel *authError, AppliStruct *appliStruct){
-    const gchar* errorAuth = "Login ou mot de passe invalide";
+void *ErrorLog(GtkLabel *authError, AppliStruct *appliStruct) {
+    const gchar *errorAuth = "Login ou mot de passe invalide";
     gtk_label_get_text(appliStruct->authError);
     gtk_label_set_text(appliStruct->authError, errorAuth);
-
-
-
 }
-void *GetLog (GtkWidget *valideButton, AppliStruct *appliStruct){
+
+void *GetLog(GtkWidget *valideButton, AppliStruct *appliStruct) {
 
     const gchar *log = gtk_entry_get_text(GTK_ENTRY(appliStruct->loginEntry));
-
     const gchar *pwd = gtk_entry_get_text(GTK_ENTRY(appliStruct->pwdEntry));
     const gchar *tab = "salut";
 
-    if (log != NULL && pwd != NULL){
-        if (strcmp( log, tab )== 0 && strcmp( pwd, tab )== 0){
+    if (log != NULL && pwd != NULL) {
+        if (strcmp(log, tab) == 0 && strcmp(pwd, tab) == 0) {
             printf("les valeurs sont identiques");
             printf("%s\n", log);
             printf("%s\n", pwd);
             OpenScan(valideButton, appliStruct);
-
-        }else{
+        } else {
             printf("Les valeurs sont incorrectes");
             ErrorLog(appliStruct->authError, appliStruct);
-
-
-        };
-    } else{
+        }
+    } else {
         printf("DEAD");
-
     }
-
-
-
-
 }
 
 /*void *GetPwd (GtkWidget *pWidget, gpointer pData) {
@@ -132,10 +116,8 @@ void *GetLog (GtkWidget *valideButton, AppliStruct *appliStruct){
         printf("%s\n", pwd);
 
         return EXIT_SUCCESS;
-
     } else{
         printf("DEAD");
-
     }
     return 0;
 
