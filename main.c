@@ -46,9 +46,9 @@ int main(int argc, char **argv) {
     validateButton = GTK_BUTTON(gtk_builder_get_object(builder, "validateButton"));
     showCart = GTK_BUTTON(gtk_builder_get_object(builder, "cartButton"));
     cartResume = GTK_WIDGET(gtk_builder_get_object(builder, "cartWindow"));
-    returnCart = GTK_BUTTON(gtk_builder_get_object(builder, "returncartButton"));
-    addToCart = GTK_BUTTON(gtk_builder_get_object(builder, "addcartButton"));
-    barcode = GTK_ENTRY(gtk_builder_get_object(builder, "barrecodeEntry"));
+    returnCart = GTK_BUTTON(gtk_builder_get_object(builder, "returnToCartButton"));
+    addToCart = GTK_BUTTON(gtk_builder_get_object(builder, "addToCartButton"));
+    barcode = GTK_ENTRY(gtk_builder_get_object(builder, "barcodeEntry"));
     quantity = GTK_ENTRY(gtk_builder_get_object(builder, "quantityEntry"));
 
     g_signal_connect(validateButton, "clicked", (GCallback) GetLog, appliStruct);

@@ -152,7 +152,7 @@
           </packing>
         </child>
         <child>
-          <object class="GtkButton" id="returncartButton">
+          <object class="GtkButton" id="returnToCartButton">
             <property name="label" translatable="yes">Retour au scan</property>
             <property name="visible">True</property>
             <property name="can_focus">True</property>
@@ -448,7 +448,7 @@
               </packing>
             </child>
             <child>
-              <object class="GtkEntry" id="barrecodeEntry">
+              <object class="GtkEntry" id="barcodeEntry">
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="halign">center</property>
@@ -515,7 +515,7 @@
           </packing>
         </child>
         <child>
-          <object class="GtkButton" id="addcartButton">
+          <object class="GtkButton" id="addToCartButton">
             <property name="label" translatable="yes">Ajouter au panier</property>
             <property name="visible">True</property>
             <property name="can_focus">True</property>
