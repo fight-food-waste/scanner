@@ -10,6 +10,10 @@ set(CMAKE_C_STANDARD 11)
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(GTK3 REQUIRED gtk+-3.0)
 
+# Tell the compiler where to look for the CURL headers
+find_package(CURL REQUIRED)
+include_directories(${CURL_INCLUDE_DIR})
+
 # Tell the compiler where to look for the GTK headers
 include_directories(${GTK3_INCLUDE_DIRS})
 # Tell the linker where to look for GTK libraries
@@ -21,5 +25,7 @@ add_definitions(${GTK3_CFLAGS_OTHER})
 # Add target 'ffw-scanner' to be build from the other source files
 add_executable(ffw-scanner main.c gui.glade functions.c functions.h css/global.css)
 
-# Link the target to the GTK+ libraries
+# Link the target to the GTK+ library
 target_link_libraries(ffw-scanner ${GTK3_LIBRARIES})
+# Link the target to the CURL library
+target_link_libraries(ffw-scanner ${CURL_LIBRARIES})

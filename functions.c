@@ -5,6 +5,7 @@
 #include <glib/gprintf.h>
 #include <tgmath.h>
 #include "functions.h"
+#include <curl/curl.h>
 
 void *OnDestroy(GtkWidget *pWidget, AppliStruct *appliStruct) {
     gtk_main_quit();
@@ -85,6 +86,36 @@ void *GetLog(GtkWidget *valideButton, AppliStruct *appliStruct) {
     const gchar *log = gtk_entry_get_text(GTK_ENTRY(appliStruct->loginEntry));
     const gchar *pwd = gtk_entry_get_text(GTK_ENTRY(appliStruct->pwdEntry));
     const gchar *tab = "salut";
+
+    // CURL
+
+    CURLcode ret;
+    CURL *hnd;
+    struct curl_slist *slist1;
+
+    slist1 = NULL;
+    slist1 = curl_slist_append(slist1, "content-type: application/x-www-form-urlencoded");
+
+    char body[256];
+    sprintf(body, "email=%s&password=%s", log, pwd);
+
+    hnd = curl_easy_init();
+    curl_easy_setopt(hnd, CURLOPT_URL, "http://localhost:3000/auth");
+    curl_easy_setopt(hnd, CURLOPT_POSTFIELDS, body);
+    curl_easy_setopt(hnd, CURLOPT_USERAGENT, "curl/7.54.0");
+    curl_easy_setopt(hnd, CURLOPT_HTTPHEADER, slist1);
+    curl_easy_setopt(hnd, CURLOPT_CUSTOMREQUEST, "POST");
+
+    ret = curl_easy_perform(hnd);
+
+    curl_easy_cleanup(hnd);
+    hnd = NULL;
+    curl_slist_free_all(slist1);
+    slist1 = NULL;
+
+    printf ("%d", (int) ret);
+
+    // end CURL
 
     if (log != NULL && pwd != NULL) {
         if (strcmp(log, tab) == 0 && strcmp(pwd, tab) == 0) {
