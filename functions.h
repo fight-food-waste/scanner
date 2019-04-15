@@ -26,10 +26,8 @@ int *GetQuantity(GtkWidget *, gpointer);
 
 void *GetLog(GtkWidget *, AppliStruct *);
 
-void *GetPwd(GtkWidget *, gpointer);
+//void *GetPwd(GtkWidget *, gpointer);
 
+static size_t write_response(void *buffer, size_t size, size_t nmemb, void *stream);
 
-
-
-
-
+static char *request(const char *url);

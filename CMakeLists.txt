@@ -14,6 +14,13 @@ pkg_check_modules(GTK3 REQUIRED gtk+-3.0)
 find_package(CURL REQUIRED)
 include_directories(${CURL_INCLUDE_DIR})
 
+# jansson
+find_path(JANSSON_INCLUDE_DIR jansson.h /usr/include /usr/local/include)
+find_library(JANSSON_LIBRARY NAMES jansson PATHS /usr/lib /usr/local/lib)
+set(JANSSON_LIBRARIES ${JANSSON_LIBRARY})
+set(JANSSON_INCLUDE_DIRS ${JANSSON_INCLUDE_DIR})
+include_directories(${JANSSON_INCLUDE_DIR})
+
 # Tell the compiler where to look for the GTK headers
 include_directories(${GTK3_INCLUDE_DIRS})
 # Tell the linker where to look for GTK libraries
@@ -29,3 +36,5 @@ add_executable(ffw-scanner main.c gui.glade functions.c functions.h css/global.c
 target_link_libraries(ffw-scanner ${GTK3_LIBRARIES})
 # Link the target to the CURL library
 target_link_libraries(ffw-scanner ${CURL_LIBRARIES})
+target_link_libraries(ffw-scanner ${JANSSON_LIBRARIES})
+
