@@ -47,7 +47,7 @@ set(JANSSON_INCLUDE_DIRS ${JANSSON_INCLUDE_DIR})
 include_directories(${JANSSON_INCLUDE_DIR})
 
 # Add target 'ffw-scanner' to be build from the other source files
-add_executable(ffw-scanner main.c gui.glade functions.c functions.h css/global.css)
+add_executable(ffw-scanner main.c functions.c functions.h)
 
 # Link the target to the GTK+ library
 target_link_libraries(ffw-scanner ${GTK3_LIBRARIES})
