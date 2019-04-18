@@ -1,16 +1,17 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <gtk/gtk.h>
 #include <string.h>
-#include <glib/gprintf.h>
 #include <tgmath.h>
-#include "functions.h"
+
+#include <gtk/gtk.h>
+#include <glib/gprintf.h>
 #include <curl/curl.h>
 #include <jansson.h>
 
-#define RESULT_SIZE (256 * 1024)  /* CURL result, 256 KB*/
+#include "functions.h"
 
-#define URL_FORMAT "https://world.openfoodfacts.org/api/v0/product/%s.json"
+
+#define RESULT_SIZE (256 * 1024)  /* CURL result, 256 KB*/
 #define URL_SIZE 256
 
 
@@ -77,7 +78,7 @@ int *GetBarCode(GtkWidget *pwidget, gpointer pData) {
     json_error_t error;
 
     // Build URL
-    snprintf(url, URL_SIZE, URL_FORMAT, barrecode);
+    snprintf(url, URL_SIZE, "https://world.openfoodfacts.org/api/v0/product/%s.json", barrecode);
 
     // Get JSON from API with CURL
     http_document = request(url);
@@ -186,7 +187,7 @@ void *GetLog(GtkWidget *valideButton, AppliStruct *appliStruct) {
     curl_slist_free_all(slist1);
     slist1 = NULL;
 
-//    printf ("%d\n", (int) ret);
+    //printf ("%d\n", (int) ret);
 
     // end CURL
 
