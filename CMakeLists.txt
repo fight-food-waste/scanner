@@ -37,9 +37,9 @@ find_package(CURL REQUIRED)
 include_directories(${CURL_INCLUDE_DIR})
 
 ## Jansson ##
-# Keep that just in case
-#find_path(JANSSON_INCLUDE_DIR jansson.h /usr/include /usr/local/include)
-#find_library(JANSSON_LIBRARY NAMES jansson PATHS /usr/lib /usr/local/lib)
+# Import Jansson paths
+find_path(JANSSON_INCLUDE_DIR jansson.h /usr/include /usr/local/include)
+find_library(JANSSON_LIBRARY NAMES jansson PATHS /usr/lib /usr/local/lib)
 # Set some variables for cleanliness
 set(JANSSON_LIBRARIES ${JANSSON_LIBRARY})
 set(JANSSON_INCLUDE_DIRS ${JANSSON_INCLUDE_DIR})
