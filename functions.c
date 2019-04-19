@@ -27,6 +27,11 @@ AppliStruct *InitStruct(AppliStruct *appliStruct, GtkBuilder *builder) {
         appliStruct->pwdEntry = GTK_ENTRY(gtk_builder_get_object(builder, "pwdEntry"));
         appliStruct->scanproduct = GTK_WIDGET(gtk_builder_get_object(builder, "scanWindow"));
         appliStruct->authError = GTK_LABEL(gtk_builder_get_object(builder, "authError"));
+        appliStruct->cartResume = GTK_WIDGET(gtk_builder_get_object(builder, "cartWindow"));
+        appliStruct->barrecodeEntry = GTK_ENTRY(gtk_builder_get_object(builder, "barrecodeEntry"));
+        appliStruct->quantityEntry = GTK_ENTRY(gtk_builder_get_object(builder, "quantityEntry"));
+        appliStruct->refquantityLabel = GTK_LABEL(gtk_builder_get_object(builder, "refquantityLabel"));
+        appliStruct->refproductLabel = GTK_LABEL(gtk_builder_get_object(builder, "refproductLabel"));
 
     } else {
         printf("Memory not set\n");
@@ -61,92 +66,6 @@ void *ReturnCart(GtkWidget *pWidget, gpointer pData) {
 
     gtk_widget_show_all(scanWindow);
     gtk_widget_hide(cartWindow);
-}
-
-int *GetBarCode(GtkWidget *pwidget, gpointer pData) {
-
-    gchar *endPtr;
-    const gchar *barrecode = gtk_entry_get_text(GTK_ENTRY(pData));
-//    long barrecode_value = strtol(barrecode, &endPtr, 10);
-
-//    printf("%ld", barrecode_value);
-
-    char *http_document;
-    char url[URL_SIZE];
-
-    json_t *json_document;
-    json_error_t error;
-
-    // Build URL
-    snprintf(url, URL_SIZE, "https://world.openfoodfacts.org/api/v0/product/%s.json", barrecode);
-
-    // Get JSON from API with CURL
-    http_document = request(url);
-    if (!http_document)
-        return 1;
-
-    json_document = json_loads(http_document, 0, &error);
-    free(http_document);
-
-    if (!json_document) {
-        fprintf(stderr, "error: on line %d: %s\n", error.line, error.text);
-        return 1;
-    }
-
-    // Open Food Facts returns a JSON object
-    if (!json_is_object(json_document)) {
-        fprintf(stderr, "error: json_document is not an oject (JSON type error)\n");
-        json_decref(json_document);
-        return 1;
-    }
-
-    // We'll extract these value from json_document
-    json_t *product;
-    int product_status;
-    char *product_name, *product_image_url = NULL;
-
-    // Check status property of the json_document
-    json_unpack(json_document, "{s:i}", "status", &product_status);
-    // 1 is found, 0 is not found
-    if (product_status != 1) {
-        fprintf(stderr, "error: product not found.\n");
-        return 1;
-    }
-
-    // Get product properties
-    product = json_object_get(json_document, "product");
-    if (!json_is_object(product)) {
-        fprintf(stderr, "error: product is not an object\n");
-        return 1;
-    }
-
-    json_unpack(product, "{s:s}", "product_name", &product_name);
-    if (!product_name) {
-        fprintf(stderr, "error: product.product_name was not found\n");
-        return 1;
-    }
-    json_unpack(product, "{s:s}", "image_url", &product_image_url);
-    if (!product_image_url) {
-        fprintf(stderr, "error: product.product_image_url was not found\n");
-        return 1;
-    }
-
-    printf("Product name: %s\n", product_name);
-    printf("Product image: %s\n", product_image_url);
-
-    // Free json_document
-    json_decref(json_document);
-    return 0;
-}
-
-int *GetQuantity(GtkWidget *pwidget, gpointer pData) {
-
-    gchar *endPtr;
-    const gchar *quantity = gtk_entry_get_text(GTK_ENTRY(pData));
-    long value_quantity = strtol(quantity, &endPtr, 10);
-
-    printf("%ld\n", value_quantity);
-
 }
 
 void *ErrorLog(GtkLabel *authError, AppliStruct *appliStruct) {
@@ -205,6 +124,108 @@ void *GetLog(GtkWidget *valideButton, AppliStruct *appliStruct) {
         printf("DEAD\n");
     }
 }
+
+void AddProduct(GtkLabel *productId, GtkLabel *productQuantity, AppliStruct *appliStruct, const char *code,
+                const gchar *quantity) {
+    gtk_label_get_text(appliStruct->refproductLabel);
+    gtk_label_get_text(appliStruct->refquantityLabel);
+    gtk_label_set_text(appliStruct->refproductLabel, code);
+    gtk_label_set_text(appliStruct->refquantityLabel, quantity);
+
+}
+
+void *GetProduct(GtkWidget *addCart, AppliStruct *appliStruct) {
+
+    const gchar *code = gtk_entry_get_text(GTK_ENTRY(appliStruct->barrecodeEntry));
+    const gchar *quantity = gtk_entry_get_text(GTK_ENTRY(appliStruct->quantityEntry));
+    gchar *endPtr;
+
+    long value_code;
+    long value_quantity;
+
+    value_code = strtol(code, &endPtr, 10);
+    value_quantity = strtol(quantity, &endPtr, 10);
+
+
+    if (value_code == 0 || value_quantity == 0) {
+        printf("ERREUR");
+    } else {
+        printf("%ld\n", value_code);
+        printf("%ld", value_quantity);
+//        AddProduct(appliStruct->refproductLabel,appliStruct->refquantityLabel,appliStruct,code,quantity);
+
+    }
+
+    char *http_document;
+    char url[URL_SIZE];
+
+    json_t *json_document;
+    json_error_t error;
+
+    // Build URL
+    snprintf(url, URL_SIZE, "https://world.openfoodfacts.org/api/v0/product/%ld.json", value_code);
+
+    // Get JSON from API with CURL
+    http_document = request(url);
+    if (!http_document)
+        return 1;
+
+    json_document = json_loads(http_document, 0, &error);
+    free(http_document);
+
+    if (!json_document) {
+        fprintf(stderr, "error: on line %d: %s\n", error.line, error.text);
+        return 1;
+    }
+
+    // Open Food Facts returns a JSON object
+    if (!json_is_object(json_document)) {
+        fprintf(stderr, "error: json_document is not an oject (JSON type error)\n");
+        json_decref(json_document);
+        return 1;
+    }
+
+    // We'll extract these value from json_document
+    json_t *product;
+    int product_status;
+    char *product_name, *product_image_url = NULL;
+
+    // Check status property of the json_document
+    json_unpack(json_document, "{s:i}", "status", &product_status);
+    // 1 is found, 0 is not found
+    if (product_status != 1) {
+        fprintf(stderr, "error: product not found.\n");
+        return 1;
+    }
+
+    // Get product properties
+    product = json_object_get(json_document, "product");
+    if (!json_is_object(product)) {
+        fprintf(stderr, "error: product is not an object\n");
+        return 1;
+    }
+
+    json_unpack(product, "{s:s}", "product_name", &product_name);
+    if (!product_name) {
+        fprintf(stderr, "error: product.product_name was not found\n");
+        return 1;
+    }
+    json_unpack(product, "{s:s}", "image_url", &product_image_url);
+    if (!product_image_url) {
+        fprintf(stderr, "error: product.product_image_url was not found\n");
+        return 1;
+    }
+
+    printf("Product name: %s\n", product_name);
+    printf("Product image: %s\n", product_image_url);
+
+    AddProduct(appliStruct->refproductLabel, appliStruct->refquantityLabel, appliStruct, product_name, quantity);
+
+    // Free json_document
+    json_decref(json_document);
+    return 0;
+}
+
 
 /*
  * Struc used to build the result of the CURL request
@@ -304,25 +325,3 @@ static char *request(const char *url) {
     curl_global_cleanup();
     return NULL;
 }
-
-/*void *GetPwd (GtkWidget *pWidget, gpointer pData) {
-
-    const gchar *pwd = gtk_entry_get_text(GTK_ENTRY(pData));
-    const gchar *tab = "salut";
-
-    if (pwd != NULL){
-        if (strcmp( pwd, tab )== 0){
-            printf("les valeurs sont identiques");
-
-        }else{
-            printf("Les valeurs sont incorrectes");
-        };
-        printf("%s\n", pwd);
-
-        return EXIT_SUCCESS;
-    } else{
-        printf("DEAD");
-    }
-    return 0;
-
-}*/

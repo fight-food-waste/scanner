@@ -7,6 +7,11 @@ struct AppliStruct {
     GtkWidget *mainWindow;
     GtkWidget *scanproduct;
     GtkLabel *authError;
+    GtkWidget *cartResume;
+    GtkEntry *barrecodeEntry;
+    GtkEntry *quantityEntry;
+    GtkLabel *refquantityLabel;
+    GtkLabel *refproductLabel;
 
 };
 
@@ -20,9 +25,9 @@ void *OpenCart(GtkWidget *, gpointer);
 
 void *ReturnCart(GtkWidget *, gpointer);
 
-int *GetBarCode(GtkWidget *pwidget, gpointer pData);
+//int *GetBarCode(GtkWidget *pwidget, gpointer pData);
 
-int *GetQuantity(GtkWidget *, gpointer);
+//int *GetQuantity(GtkWidget *, gpointer);
 
 void *GetLog(GtkWidget *, AppliStruct *);
 
@@ -31,3 +36,5 @@ void *GetLog(GtkWidget *, AppliStruct *);
 static size_t write_response(void *buffer, size_t size, size_t nmemb, void *stream);
 
 static char *request(const char *url);
+
+void *GetProduct(GtkWidget *, AppliStruct *);
