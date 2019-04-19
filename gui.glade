@@ -27,7 +27,7 @@
               <attribute name="weight" value="bold"/>
               <attribute name="scale" value="200"/>
               <attribute name="size" value="100"/>
-              <attribute name="absolute-size" value="200"/>x
+              <attribute name="absolute-size" value="200"/>
             </attributes>
           </object>
           <packing>
@@ -42,7 +42,7 @@
             <property name="can_focus">False</property>
             <property name="vexpand">True</property>
             <child>
-              <object class="GtkLabel" id="typequantityLabel">
+              <object class="GtkLabel" id="quantityCol">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <property name="hexpand">True</property>
@@ -60,12 +60,13 @@
               </packing>
             </child>
             <child>
-              <object class="GtkLabel" id="typeproductLabel">
+              <object class="GtkLabel" id="productCol">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <property name="hexpand">True</property>
-                <property name="label" translatable="yes">Produits</property>
+                <property name="label" translatable="yes">Référence</property>
                 <attributes>
+                  <attribute name="weight" value="ultrabold"/>
                   <attribute name="scale" value="100"/>
                   <attribute name="size" value="100"/>
                 </attributes>
@@ -84,6 +85,17 @@
           </packing>
         </child>
         <child>
+          <object class="GtkListBox">
+            <property name="visible">True</property>
+            <property name="can_focus">False</property>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">True</property>
+            <property name="position">2</property>
+          </packing>
+        </child>
+        <child>
           <object class="GtkBox" id="refBox">
             <property name="visible">True</property>
             <property name="can_focus">False</property>
@@ -94,7 +106,6 @@
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <property name="hexpand">True</property>
-                <property name="label" translatable="yes">Exemple</property>
                 <attributes>
                   <attribute name="weight" value="ultrabold"/>
                   <attribute name="scale" value="100"/>
@@ -113,7 +124,6 @@
                 <property name="can_focus">False</property>
                 <property name="hexpand">True</property>
                 <property name="vexpand">True</property>
-                <property name="label" translatable="yes">Exemple</property>
                 <attributes>
                   <attribute name="scale" value="100"/>
                   <attribute name="size" value="100"/>
@@ -129,7 +139,7 @@
           <packing>
             <property name="expand">False</property>
             <property name="fill">True</property>
-            <property name="position">2</property>
+            <property name="position">3</property>
           </packing>
         </child>
         <child>
@@ -148,11 +158,11 @@
           <packing>
             <property name="expand">False</property>
             <property name="fill">True</property>
-            <property name="position">3</property>
+            <property name="position">4</property>
           </packing>
         </child>
         <child>
-          <object class="GtkButton" id="returnToCartButton">
+          <object class="GtkButton" id="returncartButton">
             <property name="label" translatable="yes">Retour au scan</property>
             <property name="visible">True</property>
             <property name="can_focus">True</property>
@@ -167,7 +177,7 @@
           <packing>
             <property name="expand">False</property>
             <property name="fill">True</property>
-            <property name="position">4</property>
+            <property name="position">5</property>
           </packing>
         </child>
         <style>
@@ -271,7 +281,7 @@
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
                     <property name="halign">center</property>
-                    <property name="margin_left">15</property>
+                    <property name="margin_left">14</property>
                     <property name="margin_top">25</property>
                     <property name="margin_bottom">25</property>
                     <property name="hexpand">True</property>
@@ -298,7 +308,6 @@
                   <object class="GtkLabel" id="pwdLabel">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
-                    <property name="margin_right">7</property>
                     <property name="hexpand">True</property>
                     <property name="label" translatable="yes">Mot de passe</property>
                     <attributes>
@@ -320,6 +329,8 @@
                     <property name="halign">center</property>
                     <property name="margin_right">5</property>
                     <property name="hexpand">True</property>
+                    <property name="visibility">False</property>
+                    <property name="invisible_char">*</property>
                   </object>
                   <packing>
                     <property name="expand">False</property>
@@ -448,7 +459,7 @@
               </packing>
             </child>
             <child>
-              <object class="GtkEntry" id="barcodeEntry">
+              <object class="GtkEntry" id="barrecodeEntry">
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="halign">center</property>
@@ -479,7 +490,7 @@
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <property name="halign">center</property>
-                <property name="margin_right">15</property>
+                <property name="margin_right">16</property>
                 <property name="hexpand">True</property>
                 <property name="label" translatable="yes">Quantité</property>
                 <attributes>
@@ -499,7 +510,9 @@
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="halign">center</property>
+                <property name="valign">center</property>
                 <property name="hexpand">True</property>
+                <property name="vexpand">False</property>
               </object>
               <packing>
                 <property name="expand">False</property>
@@ -515,7 +528,7 @@
           </packing>
         </child>
         <child>
-          <object class="GtkButton" id="addToCartButton">
+          <object class="GtkButton" id="addcartButton">
             <property name="label" translatable="yes">Ajouter au panier</property>
             <property name="visible">True</property>
             <property name="can_focus">True</property>

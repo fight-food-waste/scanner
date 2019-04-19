@@ -8,14 +8,11 @@
 
 int main(int argc, char **argv) {
 
-    GtkWidget *cartResume = NULL;
     GtkBuilder *builder = NULL;
     GtkButton *validateButton = NULL;
     GtkButton *showCart = NULL;
     GtkButton *returnCart = NULL;
-    GtkButton *addToCart = NULL;
-    GtkEntry *barcode = NULL;
-    GtkEntry *quantity = NULL;
+    GtkButton *addCart = NULL;
     GError *error = NULL;
     AppliStruct *appliStruct = NULL;
 
@@ -45,20 +42,17 @@ int main(int argc, char **argv) {
 
     validateButton = GTK_BUTTON(gtk_builder_get_object(builder, "validateButton"));
     showCart = GTK_BUTTON(gtk_builder_get_object(builder, "cartButton"));
-    cartResume = GTK_WIDGET(gtk_builder_get_object(builder, "cartWindow"));
-    returnCart = GTK_BUTTON(gtk_builder_get_object(builder, "returnToCartButton"));
-    addToCart = GTK_BUTTON(gtk_builder_get_object(builder, "addToCartButton"));
-    barcode = GTK_ENTRY(gtk_builder_get_object(builder, "barcodeEntry"));
-    quantity = GTK_ENTRY(gtk_builder_get_object(builder, "quantityEntry"));
+    returnCart = GTK_BUTTON(gtk_builder_get_object(builder, "returncartButton"));
+    addCart = GTK_BUTTON(gtk_builder_get_object(builder, "addcartButton"));
 
     g_signal_connect(validateButton, "clicked", (GCallback) GetLog, appliStruct);
     g_signal_connect(appliStruct->mainWindow, "destroy", (GCallback) OnDestroy, NULL);
     g_signal_connect(appliStruct->scanproduct, "destroy", (GCallback) OnDestroy, NULL);
+    g_signal_connect(addCart, "clicked", (GCallback) GetProduct, appliStruct);
     g_signal_connect(showCart, "clicked", (GCallback) OpenCart, builder);
-    g_signal_connect(cartResume, "destroy", (GCallback) OnDestroy, NULL);
+    g_signal_connect(appliStruct->cartResume, "destroy", (GCallback) OnDestroy, NULL);
     g_signal_connect(returnCart, "clicked", (GCallback) ReturnCart, builder);
-    g_signal_connect(addToCart, "clicked", (GCallback) GetBarCode, barcode);
-    g_signal_connect(addToCart, "clicked", (GCallback) GetQuantity, quantity);
+
 
     gtk_widget_show_all(appliStruct->mainWindow);
 
