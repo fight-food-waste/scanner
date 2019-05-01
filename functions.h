@@ -17,19 +17,19 @@ struct AppliStruct {
 
 AppliStruct *InitStruct(AppliStruct *, GtkBuilder *);
 
-void *OnDestroy(GtkWidget *, AppliStruct *);
+int OnDestroy(GtkWidget *, AppliStruct *);
 
-void *OpenScan(GtkWidget *, AppliStruct *);
+int OpenScan(GtkWidget *, AppliStruct *);
 
-void *OpenCart(GtkWidget *, gpointer);
+int OpenCart(GtkWidget *, gpointer);
 
-void *ReturnCart(GtkWidget *, gpointer);
+int ReturnCart(GtkWidget *, gpointer);
 
 //int *GetBarCode(GtkWidget *pwidget, gpointer pData);
 
 //int *GetQuantity(GtkWidget *, gpointer);
 
-void *GetLog(GtkWidget *, AppliStruct *);
+int GetLog(GtkWidget *valideButton, AppliStruct *appliStruct);
 
 //void *GetPwd(GtkWidget *, gpointer);
 
@@ -37,4 +37,4 @@ static size_t write_response(void *buffer, size_t size, size_t nmemb, void *stre
 
 static char *request(const char *url);
 
-void *GetProduct(GtkWidget *, AppliStruct *);
+int GetProduct(GtkWidget *addCart, AppliStruct *appliStruct);

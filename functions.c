@@ -15,8 +15,10 @@
 #define URL_SIZE 256
 
 
-void *OnDestroy(GtkWidget *pWidget, AppliStruct *appliStruct) {
+int OnDestroy(GtkWidget *pWidget, AppliStruct *appliStruct) {
     gtk_main_quit();
+
+    return EXIT_SUCCESS;
 }
 
 AppliStruct *InitStruct(AppliStruct *appliStruct, GtkBuilder *builder) {
@@ -40,12 +42,14 @@ AppliStruct *InitStruct(AppliStruct *appliStruct, GtkBuilder *builder) {
     return appliStruct;
 }
 
-void *OpenScan(GtkWidget *valideButton, AppliStruct *appliStruct) {
+int OpenScan(GtkWidget *valideButton, AppliStruct *appliStruct) {
     gtk_widget_show_all(appliStruct->scanproduct);
     gtk_widget_hide(appliStruct->mainWindow);
+
+    return EXIT_SUCCESS;
 }
 
-void *OpenCart(GtkWidget *pWidget, gpointer pData) {
+int OpenCart(GtkWidget *pWidget, gpointer pData) {
     GtkWidget *cartResume = NULL;
     GtkWidget *scanproduct = NULL;
 
@@ -54,9 +58,11 @@ void *OpenCart(GtkWidget *pWidget, gpointer pData) {
 
     gtk_widget_show_all(cartResume);
     gtk_widget_hide(scanproduct);
+
+    return EXIT_SUCCESS;
 }
 
-void *ReturnCart(GtkWidget *pWidget, gpointer pData) {
+int ReturnCart(GtkWidget *pWidget, gpointer pData) {
 
     GtkWidget *scanWindow = NULL;
     GtkWidget *cartWindow = NULL;
@@ -66,15 +72,19 @@ void *ReturnCart(GtkWidget *pWidget, gpointer pData) {
 
     gtk_widget_show_all(scanWindow);
     gtk_widget_hide(cartWindow);
+
+    return EXIT_SUCCESS;
 }
 
-void *ErrorLog(GtkLabel *authError, AppliStruct *appliStruct) {
+int ErrorLog(GtkLabel *authError, AppliStruct *appliStruct) {
     const gchar *errorAuth = "Login ou mot de passe invalide";
     gtk_label_get_text(appliStruct->authError);
     gtk_label_set_text(appliStruct->authError, errorAuth);
+
+    return EXIT_SUCCESS;
 }
 
-void *GetLog(GtkWidget *valideButton, AppliStruct *appliStruct) {
+int GetLog(GtkWidget *valideButton, AppliStruct *appliStruct) {
 
     const gchar *log = gtk_entry_get_text(GTK_ENTRY(appliStruct->loginEntry));
     const gchar *pwd = gtk_entry_get_text(GTK_ENTRY(appliStruct->pwdEntry));
@@ -116,25 +126,32 @@ void *GetLog(GtkWidget *valideButton, AppliStruct *appliStruct) {
             printf("%s\n", log);
             printf("%s\n", pwd);
             OpenScan(valideButton, appliStruct);
+
+            return EXIT_SUCCESS;
         } else {
             printf("Les valeurs sont incorrectes\n");
             ErrorLog(appliStruct->authError, appliStruct);
+
+            return EXIT_FAILURE;
         }
     } else {
         printf("DEAD\n");
+
+        return EXIT_FAILURE;
     }
 }
 
-void AddProduct(GtkLabel *productId, GtkLabel *productQuantity, AppliStruct *appliStruct, const char *code,
-                const gchar *quantity) {
+int AddProduct(GtkLabel *productId, GtkLabel *productQuantity, AppliStruct *appliStruct, const char *code,
+               const gchar *quantity) {
     gtk_label_get_text(appliStruct->refproductLabel);
     gtk_label_get_text(appliStruct->refquantityLabel);
     gtk_label_set_text(appliStruct->refproductLabel, code);
     gtk_label_set_text(appliStruct->refquantityLabel, quantity);
 
+    return EXIT_SUCCESS;
 }
 
-void *GetProduct(GtkWidget *addCart, AppliStruct *appliStruct) {
+int GetProduct(GtkWidget *addCart, AppliStruct *appliStruct) {
 
     const gchar *code = gtk_entry_get_text(GTK_ENTRY(appliStruct->barrecodeEntry));
     const gchar *quantity = gtk_entry_get_text(GTK_ENTRY(appliStruct->quantityEntry));
