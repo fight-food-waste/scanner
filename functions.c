@@ -245,7 +245,7 @@ int GetProduct(GtkWidget *addCart, AppliStruct *appliStruct) {
 
 
 /*
- * Struc used to build the result of the CURL request
+ * Struct used to build the result of the CURL request
  * Contains a string (final data) and position/size of the string
  */
 struct write_result {
