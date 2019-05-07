@@ -13,6 +13,7 @@
 
 #define RESULT_SIZE (256 * 1024)  /* CURL result, 256 KB*/
 #define URL_SIZE 256
+#define API_ENDPOINT "http://localhost:3000"
 
 
 int OnDestroy(GtkWidget *pWidget, AppliStruct *appliStruct) {
@@ -92,53 +93,38 @@ int GetLog(GtkWidget *valideButton, AppliStruct *appliStruct) {
 
     // CURL
 
-    CURLcode ret;
-    CURL *hnd;
-    struct curl_slist *slist1;
+    CURLcode curl_code;
+    CURL *curl_handle;
+    struct curl_slist *http_headers;
+    long http_code = 0;
 
-    slist1 = NULL;
-    slist1 = curl_slist_append(slist1, "content-type: application/x-www-form-urlencoded");
+    http_headers = NULL;
+    // Add header to list of strings
+    http_headers = curl_slist_append(http_headers, "content-type: application/x-www-form-urlencoded");
 
     char body[256];
     sprintf(body, "email=%s&password=%s", log, pwd);
 
-    hnd = curl_easy_init();
-    curl_easy_setopt(hnd, CURLOPT_URL, "http://localhost:3000/auth");
-    curl_easy_setopt(hnd, CURLOPT_POSTFIELDS, body);
-    curl_easy_setopt(hnd, CURLOPT_USERAGENT, "curl/7.54.0");
-    curl_easy_setopt(hnd, CURLOPT_HTTPHEADER, slist1);
-    curl_easy_setopt(hnd, CURLOPT_CUSTOMREQUEST, "POST");
+    curl_handle = curl_easy_init();
+    curl_easy_setopt(curl_handle, CURLOPT_URL, API_ENDPOINT"/auth");
+    curl_easy_setopt(curl_handle, CURLOPT_POSTFIELDS, body);
+    curl_easy_setopt(curl_handle, CURLOPT_USERAGENT, "curl/7.54.0");
+    curl_easy_setopt(curl_handle, CURLOPT_HTTPHEADER, http_headers);
+    curl_easy_setopt(curl_handle, CURLOPT_CUSTOMREQUEST, "POST");
 
-    ret = curl_easy_perform(hnd);
+    curl_code = curl_easy_perform(curl_handle);
+    curl_easy_getinfo (curl_handle, CURLINFO_RESPONSE_CODE, &http_code);
 
-    curl_easy_cleanup(hnd);
-    hnd = NULL;
-    curl_slist_free_all(slist1);
-    slist1 = NULL;
 
-    //printf ("%d\n", (int) ret);
+    curl_easy_cleanup(curl_handle);
+    curl_slist_free_all(http_headers);
 
-    // end CURL
+    printf ("\n%d\n", (int) curl_code);
 
-    if (log != NULL && pwd != NULL) {
-        if (strcmp(log, tab) == 0 && strcmp(pwd, tab) == 0) {
-            printf("les valeurs sont identiques\n");
-            printf("%s\n", log);
-            printf("%s\n", pwd);
-            OpenScan(valideButton, appliStruct);
-
-            return EXIT_SUCCESS;
-        } else {
-            printf("Les valeurs sont incorrectes\n");
-            ErrorLog(appliStruct->authError, appliStruct);
-
-            return EXIT_FAILURE;
-        }
-    } else {
-        printf("DEAD\n");
-
-        return EXIT_FAILURE;
-    }
+    if (http_code == 200 && curl_code != CURLE_ABORTED_BY_CALLBACK)
+        printf("yay");
+    else
+        printf("rip");
 }
 
 int AddProduct(GtkLabel *productId, GtkLabel *productQuantity, AppliStruct *appliStruct, const char *code,
