@@ -86,6 +86,8 @@ int ErrorLog(GtkLabel *authError, AppliStruct *appliStruct) {
 }
 
 int GetLog(GtkWidget *valideButton, AppliStruct *appliStruct) {
+//    Bypass login
+//    OpenScan(valideButton, appliStruct);
 
     const gchar *log = gtk_entry_get_text(GTK_ENTRY(appliStruct->loginEntry));
     const gchar *pwd = gtk_entry_get_text(GTK_ENTRY(appliStruct->pwdEntry));
@@ -132,38 +134,59 @@ int GetLog(GtkWidget *valideButton, AppliStruct *appliStruct) {
     }
 }
 
-int AddProduct(GtkLabel *productId, GtkLabel *productQuantity, AppliStruct *appliStruct, const char *code,
-               const gchar *quantity) {
-    gtk_label_get_text(appliStruct->refproductLabel);
-    gtk_label_get_text(appliStruct->refquantityLabel);
-    gtk_label_set_text(appliStruct->refproductLabel, code);
-    gtk_label_set_text(appliStruct->refquantityLabel, quantity);
+/*
+ * Set product name and quantity in the cart
+ */
+int AddProduct(AppliStruct *appliStruct, product product) {
+    // Cast to gchar for gtk_label_set_text
+    gchar *product_quantity;
+    product_quantity = g_strdup_printf ("%li", product.quantity);
+
+    gtk_label_set_text(appliStruct->refproductLabel, product.name);
+    gtk_label_set_text(appliStruct->refquantityLabel, product_quantity);
 
     return EXIT_SUCCESS;
 }
 
-int GetProduct(GtkWidget *addCart, AppliStruct *appliStruct) {
+/*
+ * Extract product values from GTK,
+ * and prepare to add product to cart
+ */
+int add_to_cart(GtkWidget *addCart, AppliStruct *appliStruct) {
 
-    const gchar *code = gtk_entry_get_text(GTK_ENTRY(appliStruct->barrecodeEntry));
-    const gchar *quantity = gtk_entry_get_text(GTK_ENTRY(appliStruct->quantityEntry));
-    gchar *endPtr;
+    struct product current_product;
+    gchar *endPtr; // for strol
 
-    long value_code;
-    long value_quantity;
+    const gchar *raw_code = gtk_entry_get_text(GTK_ENTRY(appliStruct->barrecodeEntry));
+    const gchar *raw_quantity = gtk_entry_get_text(GTK_ENTRY(appliStruct->quantityEntry));
 
-    value_code = strtol(code, &endPtr, 10);
-    value_quantity = strtol(quantity, &endPtr, 10);
+    // strol returns the converted int as a long int, else 0 is returned.
+    current_product.code = strtol(raw_code, &endPtr, 10);
+    current_product.quantity = strtol(raw_quantity, &endPtr, 10);
 
-
-    if (value_code == 0 || value_quantity == 0) {
-        printf("ERREUR");
+    if (current_product.code == 0 || current_product.quantity == 0) {
+        return EXIT_FAILURE;
     } else {
-        printf("%ld\n", value_code);
-        printf("%ld", value_quantity);
-//        AddProduct(appliStruct->refproductLabel,appliStruct->refquantityLabel,appliStruct,code,quantity);
-
+        printf("%ld\n", current_product.code);
+        printf("%ld\n", current_product.quantity);
     }
 
+    // Add name and image_url to product struct
+    if (get_product_info(&current_product) == EXIT_SUCCESS) {
+        AddProduct(appliStruct, current_product);
+        printf("success");
+        return EXIT_SUCCESS;
+    } else {
+        printf("fail");
+        return EXIT_FAILURE;
+    }
+}
+
+/*
+ * Add name and image_url to product struct
+ */
+
+int get_product_info(product *product) {
     char *http_document;
     char url[URL_SIZE];
 
@@ -171,7 +194,7 @@ int GetProduct(GtkWidget *addCart, AppliStruct *appliStruct) {
     json_error_t error;
 
     // Build URL
-    snprintf(url, URL_SIZE, "https://world.openfoodfacts.org/api/v0/product/%ld.json", value_code);
+    snprintf(url, URL_SIZE, "https://world.openfoodfacts.org/api/v0/product/%ld.json", product->code);
 
     // Get JSON from API with CURL
     http_document = request(url);
@@ -194,9 +217,9 @@ int GetProduct(GtkWidget *addCart, AppliStruct *appliStruct) {
     }
 
     // We'll extract these value from json_document
-    json_t *product;
+    json_t *product_json;
     int product_status;
-    char *product_name, *product_image_url = NULL;
+//    char *product_name, *product_image_url = NULL;
 
     // Check status property of the json_document
     json_unpack(json_document, "{s:i}", "status", &product_status);
@@ -207,27 +230,26 @@ int GetProduct(GtkWidget *addCart, AppliStruct *appliStruct) {
     }
 
     // Get product properties
-    product = json_object_get(json_document, "product");
-    if (!json_is_object(product)) {
+    product_json = json_object_get(json_document, "product");
+    if (!json_is_object(product_json)) {
         fprintf(stderr, "error: product is not an object\n");
         return 1;
     }
 
-    json_unpack(product, "{s:s}", "product_name", &product_name);
-    if (!product_name) {
+    json_unpack(product_json, "{s:s}", "product_name", &product->name);
+    if (!product->name) {
         fprintf(stderr, "error: product.product_name was not found\n");
         return 1;
     }
-    json_unpack(product, "{s:s}", "image_url", &product_image_url);
-    if (!product_image_url) {
+    json_unpack(product_json, "{s:s}", "image_url", &product->image_url);
+    if (!product->image_url) {
         fprintf(stderr, "error: product.product_image_url was not found\n");
         return 1;
     }
 
-    printf("Product name: %s\n", product_name);
-    printf("Product image: %s\n", product_image_url);
+    printf("Product name: %s\n", product->name);
+    printf("Product image: %s\n", product->image_url);
 
-    AddProduct(appliStruct->refproductLabel, appliStruct->refquantityLabel, appliStruct, product_name, quantity);
 
     // Free json_document
     json_decref(json_document);

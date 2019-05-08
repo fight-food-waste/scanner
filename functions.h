@@ -15,7 +15,20 @@ struct AppliStruct {
 
 };
 
+typedef struct product product;
+
+struct product {
+    long code;
+    long quantity;
+    char* name;
+    char* image_url;
+};
+
 AppliStruct *InitStruct(AppliStruct *, GtkBuilder *);
+
+int AddProduct(AppliStruct *appliStruct, product product);
+
+int get_product_info(product *product);
 
 int OnDestroy(GtkWidget *, AppliStruct *);
 
@@ -37,4 +50,4 @@ static size_t write_response(void *buffer, size_t size, size_t nmemb, void *stre
 
 static char *request(const char *url);
 
-int GetProduct(GtkWidget *addCart, AppliStruct *appliStruct);
+int add_to_cart(GtkWidget *addCart, AppliStruct *appliStruct);

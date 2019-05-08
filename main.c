@@ -48,7 +48,7 @@ int main(int argc, char **argv) {
     g_signal_connect(validateButton, "clicked", (GCallback) GetLog, appliStruct);
     g_signal_connect(appliStruct->mainWindow, "destroy", (GCallback) OnDestroy, NULL);
     g_signal_connect(appliStruct->scanproduct, "destroy", (GCallback) OnDestroy, NULL);
-    g_signal_connect(addCart, "clicked", (GCallback) GetProduct, appliStruct);
+    g_signal_connect(addCart, "clicked", (GCallback) add_to_cart, appliStruct);
     g_signal_connect(showCart, "clicked", (GCallback) OpenCart, builder);
     g_signal_connect(appliStruct->cartResume, "destroy", (GCallback) OnDestroy, NULL);
     g_signal_connect(returnCart, "clicked", (GCallback) ReturnCart, builder);
