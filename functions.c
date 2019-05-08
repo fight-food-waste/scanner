@@ -121,10 +121,15 @@ int GetLog(GtkWidget *valideButton, AppliStruct *appliStruct) {
 
     printf ("\n%d\n", (int) curl_code);
 
-    if (http_code == 200 && curl_code != CURLE_ABORTED_BY_CALLBACK)
-        printf("yay");
-    else
-        printf("rip");
+    if (http_code == 200 && curl_code != CURLE_ABORTED_BY_CALLBACK) {
+        OpenScan(valideButton, appliStruct);
+
+        return EXIT_SUCCESS;
+    } else {
+        ErrorLog(appliStruct->authError, appliStruct);
+
+        return EXIT_FAILURE;
+    }
 }
 
 int AddProduct(GtkLabel *productId, GtkLabel *productQuantity, AppliStruct *appliStruct, const char *code,
