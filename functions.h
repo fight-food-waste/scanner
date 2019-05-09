@@ -24,6 +24,13 @@ struct product {
     char* image_url;
 };
 
+typedef struct http_params {
+    CURLcode curl_code;
+    struct curl_slist *http_headers;
+    long http_code;
+    char* body;
+};
+
 AppliStruct *InitStruct(AppliStruct *, GtkBuilder *);
 
 int AddProduct(AppliStruct *appliStruct, product product);
@@ -48,6 +55,6 @@ int GetLog(GtkWidget *valideButton, AppliStruct *appliStruct);
 
 static size_t write_response(void *buffer, size_t size, size_t nmemb, void *stream);
 
-static char *request(const char *url);
+static char *http_get(const char *url);
 
 int add_to_cart(GtkWidget *addCart, AppliStruct *appliStruct);

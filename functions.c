@@ -91,12 +91,10 @@ int GetLog(GtkWidget *valideButton, AppliStruct *appliStruct) {
 
     const gchar *log = gtk_entry_get_text(GTK_ENTRY(appliStruct->loginEntry));
     const gchar *pwd = gtk_entry_get_text(GTK_ENTRY(appliStruct->pwdEntry));
-    const gchar *tab = "salut";
 
     // CURL
 
     CURLcode curl_code;
-    CURL *curl_handle;
     struct curl_slist *http_headers;
     long http_code = 0;
 
@@ -107,6 +105,8 @@ int GetLog(GtkWidget *valideButton, AppliStruct *appliStruct) {
     char body[256];
     sprintf(body, "email=%s&password=%s", log, pwd);
 
+    CURL *curl_handle;
+
     curl_handle = curl_easy_init();
     curl_easy_setopt(curl_handle, CURLOPT_URL, API_ENDPOINT"/auth");
     curl_easy_setopt(curl_handle, CURLOPT_POSTFIELDS, body);
@@ -116,7 +116,6 @@ int GetLog(GtkWidget *valideButton, AppliStruct *appliStruct) {
 
     curl_code = curl_easy_perform(curl_handle);
     curl_easy_getinfo (curl_handle, CURLINFO_RESPONSE_CODE, &http_code);
-
 
     curl_easy_cleanup(curl_handle);
     curl_slist_free_all(http_headers);
@@ -197,7 +196,7 @@ int get_product_info(product *product) {
     snprintf(url, URL_SIZE, "https://world.openfoodfacts.org/api/v0/product/%ld.json", product->code);
 
     // Get JSON from API with CURL
-    http_document = request(url);
+    http_document = http_get(url);
     if (!http_document)
         return 1;
 
@@ -211,7 +210,7 @@ int get_product_info(product *product) {
 
     // Open Food Facts returns a JSON object
     if (!json_is_object(json_document)) {
-        fprintf(stderr, "error: json_document is not an oject (JSON type error)\n");
+        fprintf(stderr, "error: json_document is not an object (JSON type error)\n");
         json_decref(json_document);
         return 1;
     }
@@ -258,7 +257,7 @@ int get_product_info(product *product) {
 
 
 /*
- * Struct used to build the result of the CURL request
+ * Struct used to build the result of the CURL http_get
  * Contains a string (final data) and position/size of the string
  */
 struct write_result {
@@ -291,12 +290,12 @@ static size_t write_response(void *buffer, size_t size, size_t nmemb, void *stre
 }
 
 /*
- * Takes an URL and returns the HTTP document
+ * Return document from GET HTTP request
  */
-static char *request(const char *url) {
+static char *http_get(const char *url) {
     // CURL init
     CURL *curl = NULL;
-    CURLcode status; // Status of the CURL request
+    CURLcode status; // Status of the CURL http_get
     char *data = NULL; // HTTP document
     long code; // HTTP response code
 
@@ -321,7 +320,7 @@ static char *request(const char *url) {
     curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_response); // Defines callback function
     curl_easy_setopt(curl, CURLOPT_WRITEDATA, &write_result);
 
-    // Make HTTP request
+    // Make HTTP http_get
     status = curl_easy_perform(curl);
     if (status != 0) {
         fprintf(stderr, "error: unable to request data from %s:\n", url);
