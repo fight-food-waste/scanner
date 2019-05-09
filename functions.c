@@ -30,11 +30,11 @@ AppliStruct *InitStruct(AppliStruct *appliStruct, GtkBuilder *builder) {
         appliStruct->pwdEntry = GTK_ENTRY(gtk_builder_get_object(builder, "pwdEntry"));
         appliStruct->scanproduct = GTK_WIDGET(gtk_builder_get_object(builder, "scanWindow"));
         appliStruct->authError = GTK_LABEL(gtk_builder_get_object(builder, "authError"));
-        appliStruct->cartResume = GTK_WIDGET(gtk_builder_get_object(builder, "cartWindow"));
         appliStruct->barrecodeEntry = GTK_ENTRY(gtk_builder_get_object(builder, "barrecodeEntry"));
         appliStruct->quantityEntry = GTK_ENTRY(gtk_builder_get_object(builder, "quantityEntry"));
-        appliStruct->refquantityLabel = GTK_LABEL(gtk_builder_get_object(builder, "refquantityLabel"));
-        appliStruct->refproductLabel = GTK_LABEL(gtk_builder_get_object(builder, "refproductLabel"));
+        appliStruct->cartWindow = GTK_WIDGET(gtk_builder_get_object(builder, "cartWindow"));
+        appliStruct->listStore = GTK_LIST_STORE(gtk_builder_get_object(builder, "liststore"));
+        appliStruct->scrolledWindow = GTK_SCROLLED_WINDOW(gtk_builder_get_object(builder, "scrolledWindow"));
 
     } else {
         printf("Memory not set\n");
@@ -50,32 +50,21 @@ int OpenScan(GtkWidget *valideButton, AppliStruct *appliStruct) {
     return EXIT_SUCCESS;
 }
 
-int OpenCart(GtkWidget *pWidget, gpointer pData) {
-    GtkWidget *cartResume = NULL;
-    GtkWidget *scanproduct = NULL;
-
-    cartResume = GTK_WIDGET(gtk_builder_get_object((GtkBuilder *) pData, "cartWindow"));
-    scanproduct = GTK_WIDGET(gtk_builder_get_object((GtkBuilder *) pData, "scanWindow"));
-
-    gtk_widget_show_all(cartResume);
-    gtk_widget_hide(scanproduct);
+void *OpenCart(GtkWidget *pWidget, AppliStruct *appliStruct) {
+    gtk_widget_show_all(appliStruct->cartWindow);
+    gtk_widget_hide(appliStruct->scanproduct);
 
     return EXIT_SUCCESS;
 }
 
-int ReturnCart(GtkWidget *pWidget, gpointer pData) {
 
-    GtkWidget *scanWindow = NULL;
-    GtkWidget *cartWindow = NULL;
-
-    scanWindow = GTK_WIDGET(gtk_builder_get_object((GtkBuilder *) pData, "scanWindow"));
-    cartWindow = GTK_WIDGET(gtk_builder_get_object((GtkBuilder *) pData, "cartWindow"));
-
-    gtk_widget_show_all(scanWindow);
-    gtk_widget_hide(cartWindow);
+void *ReturnCart(GtkWidget *pWidget, AppliStruct *appliStruct) {
+    gtk_widget_show_all(appliStruct->scanproduct);
+    gtk_widget_hide(appliStruct->cartWindow);
 
     return EXIT_SUCCESS;
 }
+
 
 int ErrorLog(GtkLabel *authError, AppliStruct *appliStruct) {
     const gchar *errorAuth = "Login ou mot de passe invalide";
@@ -87,7 +76,7 @@ int ErrorLog(GtkLabel *authError, AppliStruct *appliStruct) {
 
 int GetLog(GtkWidget *valideButton, AppliStruct *appliStruct) {
 //    Bypass login
-//    OpenScan(valideButton, appliStruct);
+    OpenScan(valideButton, appliStruct);
 
     const gchar *log = gtk_entry_get_text(GTK_ENTRY(appliStruct->loginEntry));
     const gchar *pwd = gtk_entry_get_text(GTK_ENTRY(appliStruct->pwdEntry));
@@ -108,7 +97,8 @@ int GetLog(GtkWidget *valideButton, AppliStruct *appliStruct) {
     CURL *curl_handle;
 
     curl_handle = curl_easy_init();
-    curl_easy_setopt(curl_handle, CURLOPT_URL, API_ENDPOINT"/auth");
+    curl_easy_setopt(curl_handle, CURLOPT_URL, API_ENDPOINT
+            "/auth");
     curl_easy_setopt(curl_handle, CURLOPT_POSTFIELDS, body);
     curl_easy_setopt(curl_handle, CURLOPT_USERAGENT, "curl/7.54.0");
     curl_easy_setopt(curl_handle, CURLOPT_HTTPHEADER, http_headers);
@@ -120,7 +110,7 @@ int GetLog(GtkWidget *valideButton, AppliStruct *appliStruct) {
     curl_easy_cleanup(curl_handle);
     curl_slist_free_all(http_headers);
 
-    printf ("\n%d\n", (int) curl_code);
+    printf("\n%d\n", (int) curl_code);
 
     if (http_code == 200 && curl_code != CURLE_ABORTED_BY_CALLBACK) {
         OpenScan(valideButton, appliStruct);
@@ -137,15 +127,50 @@ int GetLog(GtkWidget *valideButton, AppliStruct *appliStruct) {
  * Set product name and quantity in the cart
  */
 int AddProduct(AppliStruct *appliStruct, product product) {
-    // Cast to gchar for gtk_label_set_text
-    gchar *product_quantity;
-    product_quantity = g_strdup_printf ("%li", product.quantity);
 
-    gtk_label_set_text(appliStruct->refproductLabel, product.name);
-    gtk_label_set_text(appliStruct->refquantityLabel, product_quantity);
+    GtkTreeIter iter;
+
+    gtk_list_store_append(appliStruct->listStore, &iter);
+    gtk_list_store_set(appliStruct->listStore, &iter,
+                       QTY_COLUMN, (glong) product.quantity,
+                       NAME_COLUMN, (gchar *) product.name,
+                       -1);
 
     return EXIT_SUCCESS;
 }
+
+/*
+ * Init the GtkTreeView
+ */
+GtkTreeView *createView(AppliStruct *appliStruct) {
+    // Create new GtkListStore with types columns
+    appliStruct->listStore = gtk_list_store_new(N_COLUMNS,      // 2
+                                                G_TYPE_LONG,    // quantity
+                                                G_TYPE_STRING); // name
+
+    // Creates a new GtkTreeView widget with the model initialized to appliStruct->listStore
+    appliStruct->listView = gtk_tree_view_new_with_model(GTK_TREE_MODEL(appliStruct->listStore));
+
+    // Creates a new GtkCellRendererText
+    appliStruct->cellRenderer = gtk_cell_renderer_text_new();
+    // Creates GtkTreeViewColumn for "Quantity"/QTY_COLUMN
+    appliStruct->pColumn = gtk_tree_view_column_new_with_attributes("Quantity", appliStruct->cellRenderer, "text",
+                                                                    QTY_COLUMN, NULL);
+    // Appends appliStruct->pColumn to the list of columns
+    gtk_tree_view_append_column(GTK_TREE_VIEW(appliStruct->listView), appliStruct->pColumn);
+
+    // Repeat for "Name"/NAME_COLUMN
+    appliStruct->cellRenderer = gtk_cell_renderer_text_new();
+    appliStruct->pColumn = gtk_tree_view_column_new_with_attributes("Name", appliStruct->cellRenderer, "text",
+                                                                    NAME_COLUMN, NULL);
+    gtk_tree_view_append_column(GTK_TREE_VIEW(appliStruct->listView), appliStruct->pColumn);
+
+    // Add GtkTreeView to GtkScrolledWindow
+    gtk_container_add(GTK_CONTAINER(appliStruct->scrolledWindow), appliStruct->listView);
+
+    return EXIT_SUCCESS;
+}
+
 
 /*
  * Extract product values from GTK,
@@ -240,6 +265,10 @@ int get_product_info(product *product) {
         fprintf(stderr, "error: product.product_name was not found\n");
         return 1;
     }
+    // It seems the string can be randomly NOT UTF-8.
+    // This converts it to UTF-8 from whatever locale it's using.
+    product->name = g_locale_to_utf8(product->name, -1, NULL, NULL, NULL);
+
     json_unpack(product_json, "{s:s}", "image_url", &product->image_url);
     if (!product->image_url) {
         fprintf(stderr, "error: product.product_image_url was not found\n");

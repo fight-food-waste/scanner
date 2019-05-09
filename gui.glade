@@ -102,42 +102,28 @@
             <property name="hexpand">True</property>
             <property name="vexpand">True</property>
             <child>
-              <object class="GtkLabel" id="refquantityLabel">
+              <object class="GtkScrolledWindow" id="scrolledWindow">
                 <property name="visible">True</property>
-                <property name="can_focus">False</property>
+                <property name="can_focus">True</property>
                 <property name="hexpand">True</property>
-                <attributes>
-                  <attribute name="weight" value="ultrabold"/>
-                  <attribute name="scale" value="100"/>
-                  <attribute name="size" value="100"/>
-                </attributes>
+                <property name="vexpand">False</property>
+                <property name="window_placement">bottom-left</property>
+                <property name="shadow_type">in</property>
+                <property name="propagate_natural_width">True</property>
+                <property name="propagate_natural_height">True</property>
+                <child>
+                  <placeholder/>
+                </child>
               </object>
-              <packing>
-                <property name="expand">False</property>
-                <property name="fill">True</property>
-                <property name="position">0</property>
-              </packing>
-            </child>
-            <child>
-              <object class="GtkLabel" id="refproductLabel">
-                <property name="visible">True</property>
-                <property name="can_focus">False</property>
-                <property name="hexpand">True</property>
-                <property name="vexpand">True</property>
-                <attributes>
-                  <attribute name="scale" value="100"/>
-                  <attribute name="size" value="100"/>
-                </attributes>
-              </object>
-              <packing>
-                <property name="expand">False</property>
-                <property name="fill">True</property>
-                <property name="position">1</property>
-              </packing>
+            <packing>
+              <property name="expand">True</property>
+              <property name="fill">True</property>
+              <property name="position">0</property>
+            </packing>
             </child>
           </object>
           <packing>
-            <property name="expand">False</property>
+            <property name="expand">True</property>
             <property name="fill">True</property>
             <property name="position">3</property>
           </packing>
@@ -397,6 +383,7 @@
       </object>
     </child>
   </object>
+  <object class="GtkListStore" id="liststore"/>
   <object class="GtkWindow" id="scanWindow">
     <property name="can_focus">False</property>
     <property name="default_width">600</property>

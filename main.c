@@ -8,6 +8,7 @@
 
 int main(int argc, char **argv) {
 
+    GtkWidget * cartResume = NULL;
     GtkBuilder *builder = NULL;
     GtkButton *validateButton = NULL;
     GtkButton *showCart = NULL;
@@ -32,7 +33,7 @@ int main(int argc, char **argv) {
 
     GtkCssProvider *provider = gtk_css_provider_new();
     GdkDisplay *display = gdk_display_get_default();
-    GdkScreen *screen = gdk_display_get_default_screen(display);
+    GdkScreen * screen = gdk_display_get_default_screen(display);
     gtk_style_context_add_provider_for_screen(screen, GTK_STYLE_PROVIDER (provider), GTK_STYLE_PROVIDER_PRIORITY_USER);
     GFile *css_file = g_file_new_for_path("../css/global.css");
     gtk_css_provider_load_from_file(provider, css_file, &error);
@@ -45,13 +46,15 @@ int main(int argc, char **argv) {
     returnCart = GTK_BUTTON(gtk_builder_get_object(builder, "returncartButton"));
     addCart = GTK_BUTTON(gtk_builder_get_object(builder, "addcartButton"));
 
+    createView(appliStruct);
+
     g_signal_connect(validateButton, "clicked", (GCallback) GetLog, appliStruct);
     g_signal_connect(appliStruct->mainWindow, "destroy", (GCallback) OnDestroy, NULL);
     g_signal_connect(appliStruct->scanproduct, "destroy", (GCallback) OnDestroy, NULL);
+    g_signal_connect(showCart, "clicked", (GCallback) OpenCart, appliStruct);
     g_signal_connect(addCart, "clicked", (GCallback) add_to_cart, appliStruct);
-    g_signal_connect(showCart, "clicked", (GCallback) OpenCart, builder);
-    g_signal_connect(appliStruct->cartResume, "destroy", (GCallback) OnDestroy, NULL);
-    g_signal_connect(returnCart, "clicked", (GCallback) ReturnCart, builder);
+    g_signal_connect(cartResume, "destroy", (GCallback) OnDestroy, NULL);
+    g_signal_connect(returnCart, "clicked", (GCallback) ReturnCart, appliStruct);
 
 
     gtk_widget_show_all(appliStruct->mainWindow);
