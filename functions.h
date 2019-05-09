@@ -7,34 +7,56 @@ struct AppliStruct {
     GtkWidget *mainWindow;
     GtkWidget *scanproduct;
     GtkLabel *authError;
-    GtkWidget *cartResume;
     GtkEntry *barrecodeEntry;
     GtkEntry *quantityEntry;
-    GtkLabel *refquantityLabel;
-    GtkLabel *refproductLabel;
+    GtkWidget *cartWindow;
+    GtkListStore *listStore;
+    GtkWidget *listView;
+    GtkCellRenderer *cellRenderer;
+    GtkTreeViewColumn *pColumn;
+    GtkScrolledWindow *scrolledWindow;
+};
 
+// Enum for GtkTreeView
+enum {
+    QTY_COLUMN = 0,
+    NAME_COLUMN,
+    N_COLUMNS = 2
+
+};
+
+/*
+ * Use struct to pass around the product properties
+ */
+typedef struct product product;
+
+struct product {
+    long code;
+    long quantity;
+    char *name;
+    char *image_url;
 };
 
 AppliStruct *InitStruct(AppliStruct *, GtkBuilder *);
 
-void *OnDestroy(GtkWidget *, AppliStruct *);
+int AddProduct(AppliStruct *appliStruct, product product);
 
-void *OpenScan(GtkWidget *, AppliStruct *);
+int get_product_info(product *product);
 
-void *OpenCart(GtkWidget *, gpointer);
+int OnDestroy(GtkWidget *, AppliStruct *);
 
-void *ReturnCart(GtkWidget *, gpointer);
+int OpenScan(GtkWidget *, AppliStruct *);
 
-//int *GetBarCode(GtkWidget *pwidget, gpointer pData);
+void *OpenCart(GtkWidget *, AppliStruct *);
 
-//int *GetQuantity(GtkWidget *, gpointer);
+void *ReturnCart(GtkWidget *, AppliStruct *);
 
-void *GetLog(GtkWidget *, AppliStruct *);
+GtkTreeView *createView(AppliStruct *);
 
-//void *GetPwd(GtkWidget *, gpointer);
+int GetLog(GtkWidget *valideButton, AppliStruct *appliStruct);
 
 static size_t write_response(void *buffer, size_t size, size_t nmemb, void *stream);
 
-static char *request(const char *url);
+static char *http_get(const char *url);
 
-void *GetProduct(GtkWidget *, AppliStruct *);
+int add_to_cart(GtkWidget *addCart, AppliStruct *appliStruct);
