@@ -1,7 +1,7 @@
 #include <gtk/gtk.h>
 
-typedef struct AppliStruct AppliStruct;
-struct AppliStruct {
+typedef struct GlobalStruct GlobalStruct;
+struct GlobalStruct {
     GtkEntry *loginEntry;
     GtkEntry *pwdEntry;
     GtkWidget *mainWindow;
@@ -37,26 +37,26 @@ struct product {
     char *image_url;
 };
 
-AppliStruct *InitStruct(AppliStruct *, GtkBuilder *);
+GlobalStruct *InitStruct(GlobalStruct *, GtkBuilder *);
 
-int AddProduct(AppliStruct *appliStruct, product product);
+int AddProduct(GlobalStruct *global_struct, product product);
 
 int get_product_info(product *product);
 
-int OnDestroy(GtkWidget *, AppliStruct *);
+int OnDestroy(GtkWidget *, GlobalStruct *);
 
-int OpenScan(GtkWidget *, AppliStruct *);
+int OpenScan(GtkWidget *, GlobalStruct *);
 
-void *OpenCart(GtkWidget *, AppliStruct *);
+void *OpenCart(GtkWidget *, GlobalStruct *);
 
-void *ReturnCart(GtkWidget *, AppliStruct *);
+void *ReturnCart(GtkWidget *, GlobalStruct *);
 
-GtkTreeView *createView(AppliStruct *);
+GtkTreeView *createView(GlobalStruct *);
 
-int GetLog(GtkWidget *valideButton, AppliStruct *appliStruct);
+int GetLog(GtkWidget *valideButton, GlobalStruct *global_struct);
 
 static size_t write_response(void *buffer, size_t size, size_t nmemb, void *stream);
 
 static char *http_get(const char *url);
 
-int add_to_cart(GtkWidget *addCart, AppliStruct *appliStruct);
+int add_to_cart(GtkWidget *addCart, GlobalStruct *global_struct);

@@ -16,70 +16,70 @@
 #define API_ENDPOINT "http://localhost:3000"
 
 
-int OnDestroy(GtkWidget *pWidget, AppliStruct *appliStruct) {
+int OnDestroy(GtkWidget *pWidget, GlobalStruct *global_struct) {
     gtk_main_quit();
 
     return EXIT_SUCCESS;
 }
 
-AppliStruct *InitStruct(AppliStruct *appliStruct, GtkBuilder *builder) {
-    appliStruct = malloc(sizeof(AppliStruct));
-    if (appliStruct) {
-        appliStruct->mainWindow = GTK_WIDGET(gtk_builder_get_object(builder, "homeWindow"));//Init mainWindow
-        appliStruct->loginEntry = GTK_ENTRY(gtk_builder_get_object(builder, "idEntry"));
-        appliStruct->pwdEntry = GTK_ENTRY(gtk_builder_get_object(builder, "pwdEntry"));
-        appliStruct->scanproduct = GTK_WIDGET(gtk_builder_get_object(builder, "scanWindow"));
-        appliStruct->authError = GTK_LABEL(gtk_builder_get_object(builder, "authError"));
-        appliStruct->barrecodeEntry = GTK_ENTRY(gtk_builder_get_object(builder, "barrecodeEntry"));
-        appliStruct->quantityEntry = GTK_ENTRY(gtk_builder_get_object(builder, "quantityEntry"));
-        appliStruct->cartWindow = GTK_WIDGET(gtk_builder_get_object(builder, "cartWindow"));
-        appliStruct->listStore = GTK_LIST_STORE(gtk_builder_get_object(builder, "liststore"));
-        appliStruct->scrolledWindow = GTK_SCROLLED_WINDOW(gtk_builder_get_object(builder, "scrolledWindow"));
+GlobalStruct *InitStruct(GlobalStruct *global_struct, GtkBuilder *builder) {
+    global_struct = malloc(sizeof(GlobalStruct));
+    if (global_struct) {
+        global_struct->mainWindow = GTK_WIDGET(gtk_builder_get_object(builder, "homeWindow"));//Init mainWindow
+        global_struct->loginEntry = GTK_ENTRY(gtk_builder_get_object(builder, "idEntry"));
+        global_struct->pwdEntry = GTK_ENTRY(gtk_builder_get_object(builder, "pwdEntry"));
+        global_struct->scanproduct = GTK_WIDGET(gtk_builder_get_object(builder, "scanWindow"));
+        global_struct->authError = GTK_LABEL(gtk_builder_get_object(builder, "authError"));
+        global_struct->barrecodeEntry = GTK_ENTRY(gtk_builder_get_object(builder, "barrecodeEntry"));
+        global_struct->quantityEntry = GTK_ENTRY(gtk_builder_get_object(builder, "quantityEntry"));
+        global_struct->cartWindow = GTK_WIDGET(gtk_builder_get_object(builder, "cartWindow"));
+        global_struct->listStore = GTK_LIST_STORE(gtk_builder_get_object(builder, "liststore"));
+        global_struct->scrolledWindow = GTK_SCROLLED_WINDOW(gtk_builder_get_object(builder, "scrolledWindow"));
 
     } else {
         printf("Memory not set\n");
         exit(1);
     }
-    return appliStruct;
+    return global_struct;
 }
 
-int OpenScan(GtkWidget *valideButton, AppliStruct *appliStruct) {
-    gtk_widget_show_all(appliStruct->scanproduct);
-    gtk_widget_hide(appliStruct->mainWindow);
+int OpenScan(GtkWidget *valideButton, GlobalStruct *global_struct) {
+    gtk_widget_show_all(global_struct->scanproduct);
+    gtk_widget_hide(global_struct->mainWindow);
 
     return EXIT_SUCCESS;
 }
 
-void *OpenCart(GtkWidget *pWidget, AppliStruct *appliStruct) {
-    gtk_widget_show_all(appliStruct->cartWindow);
-    gtk_widget_hide(appliStruct->scanproduct);
-
-    return EXIT_SUCCESS;
-}
-
-
-void *ReturnCart(GtkWidget *pWidget, AppliStruct *appliStruct) {
-    gtk_widget_show_all(appliStruct->scanproduct);
-    gtk_widget_hide(appliStruct->cartWindow);
+void *OpenCart(GtkWidget *pWidget, GlobalStruct *global_struct) {
+    gtk_widget_show_all(global_struct->cartWindow);
+    gtk_widget_hide(global_struct->scanproduct);
 
     return EXIT_SUCCESS;
 }
 
 
-int ErrorLog(GtkLabel *authError, AppliStruct *appliStruct) {
+void *ReturnCart(GtkWidget *pWidget, GlobalStruct *global_struct) {
+    gtk_widget_show_all(global_struct->scanproduct);
+    gtk_widget_hide(global_struct->cartWindow);
+
+    return EXIT_SUCCESS;
+}
+
+
+int ErrorLog(GtkLabel *authError, GlobalStruct *global_struct) {
     const gchar *errorAuth = "Login ou mot de passe invalide";
-    gtk_label_get_text(appliStruct->authError);
-    gtk_label_set_text(appliStruct->authError, errorAuth);
+    gtk_label_get_text(global_struct->authError);
+    gtk_label_set_text(global_struct->authError, errorAuth);
 
     return EXIT_SUCCESS;
 }
 
-int GetLog(GtkWidget *valideButton, AppliStruct *appliStruct) {
+int GetLog(GtkWidget *valideButton, GlobalStruct *global_struct) {
 //    Bypass login
-    OpenScan(valideButton, appliStruct);
+    OpenScan(valideButton, global_struct);
 
-    const gchar *log = gtk_entry_get_text(GTK_ENTRY(appliStruct->loginEntry));
-    const gchar *pwd = gtk_entry_get_text(GTK_ENTRY(appliStruct->pwdEntry));
+    const gchar *log = gtk_entry_get_text(GTK_ENTRY(global_struct->loginEntry));
+    const gchar *pwd = gtk_entry_get_text(GTK_ENTRY(global_struct->pwdEntry));
 
     // CURL
 
@@ -113,11 +113,11 @@ int GetLog(GtkWidget *valideButton, AppliStruct *appliStruct) {
     printf("\n%d\n", (int) curl_code);
 
     if (http_code == 200 && curl_code != CURLE_ABORTED_BY_CALLBACK) {
-        OpenScan(valideButton, appliStruct);
+        OpenScan(valideButton, global_struct);
 
         return EXIT_SUCCESS;
     } else {
-        ErrorLog(appliStruct->authError, appliStruct);
+        ErrorLog(global_struct->authError, global_struct);
 
         return EXIT_FAILURE;
     }
@@ -126,12 +126,12 @@ int GetLog(GtkWidget *valideButton, AppliStruct *appliStruct) {
 /*
  * Set product name and quantity in the cart
  */
-int AddProduct(AppliStruct *appliStruct, product product) {
+int AddProduct(GlobalStruct *global_struct, product product) {
 
     GtkTreeIter iter;
 
-    gtk_list_store_append(appliStruct->listStore, &iter);
-    gtk_list_store_set(appliStruct->listStore, &iter,
+    gtk_list_store_append(global_struct->listStore, &iter);
+    gtk_list_store_set(global_struct->listStore, &iter,
                        QTY_COLUMN, (glong) product.quantity,
                        NAME_COLUMN, (gchar *) product.name,
                        -1);
@@ -142,31 +142,31 @@ int AddProduct(AppliStruct *appliStruct, product product) {
 /*
  * Init the GtkTreeView
  */
-GtkTreeView *createView(AppliStruct *appliStruct) {
+GtkTreeView *createView(GlobalStruct *global_struct) {
     // Create new GtkListStore with types columns
-    appliStruct->listStore = gtk_list_store_new(N_COLUMNS,      // 2
+    global_struct->listStore = gtk_list_store_new(N_COLUMNS,      // 2
                                                 G_TYPE_LONG,    // quantity
                                                 G_TYPE_STRING); // name
 
-    // Creates a new GtkTreeView widget with the model initialized to appliStruct->listStore
-    appliStruct->listView = gtk_tree_view_new_with_model(GTK_TREE_MODEL(appliStruct->listStore));
+    // Creates a new GtkTreeView widget with the model initialized to global_struct->listStore
+    global_struct->listView = gtk_tree_view_new_with_model(GTK_TREE_MODEL(global_struct->listStore));
 
     // Creates a new GtkCellRendererText
-    appliStruct->cellRenderer = gtk_cell_renderer_text_new();
+    global_struct->cellRenderer = gtk_cell_renderer_text_new();
     // Creates GtkTreeViewColumn for "Quantity"/QTY_COLUMN
-    appliStruct->pColumn = gtk_tree_view_column_new_with_attributes("Quantity", appliStruct->cellRenderer, "text",
+    global_struct->pColumn = gtk_tree_view_column_new_with_attributes("Quantity", global_struct->cellRenderer, "text",
                                                                     QTY_COLUMN, NULL);
-    // Appends appliStruct->pColumn to the list of columns
-    gtk_tree_view_append_column(GTK_TREE_VIEW(appliStruct->listView), appliStruct->pColumn);
+    // Appends global_struct->pColumn to the list of columns
+    gtk_tree_view_append_column(GTK_TREE_VIEW(global_struct->listView), global_struct->pColumn);
 
     // Repeat for "Name"/NAME_COLUMN
-    appliStruct->cellRenderer = gtk_cell_renderer_text_new();
-    appliStruct->pColumn = gtk_tree_view_column_new_with_attributes("Name", appliStruct->cellRenderer, "text",
+    global_struct->cellRenderer = gtk_cell_renderer_text_new();
+    global_struct->pColumn = gtk_tree_view_column_new_with_attributes("Name", global_struct->cellRenderer, "text",
                                                                     NAME_COLUMN, NULL);
-    gtk_tree_view_append_column(GTK_TREE_VIEW(appliStruct->listView), appliStruct->pColumn);
+    gtk_tree_view_append_column(GTK_TREE_VIEW(global_struct->listView), global_struct->pColumn);
 
     // Add GtkTreeView to GtkScrolledWindow
-    gtk_container_add(GTK_CONTAINER(appliStruct->scrolledWindow), appliStruct->listView);
+    gtk_container_add(GTK_CONTAINER(global_struct->scrolledWindow), global_struct->listView);
 
     return EXIT_SUCCESS;
 }
@@ -176,13 +176,13 @@ GtkTreeView *createView(AppliStruct *appliStruct) {
  * Extract product values from GTK,
  * and prepare to add product to cart
  */
-int add_to_cart(GtkWidget *addCart, AppliStruct *appliStruct) {
+int add_to_cart(GtkWidget *addCart, GlobalStruct *global_struct) {
 
     struct product current_product;
     gchar *endPtr; // for strol
 
-    const gchar *raw_code = gtk_entry_get_text(GTK_ENTRY(appliStruct->barrecodeEntry));
-    const gchar *raw_quantity = gtk_entry_get_text(GTK_ENTRY(appliStruct->quantityEntry));
+    const gchar *raw_code = gtk_entry_get_text(GTK_ENTRY(global_struct->barrecodeEntry));
+    const gchar *raw_quantity = gtk_entry_get_text(GTK_ENTRY(global_struct->quantityEntry));
 
     // strol returns the converted int as a long int, else 0 is returned.
     current_product.code = strtol(raw_code, &endPtr, 10);
@@ -197,7 +197,7 @@ int add_to_cart(GtkWidget *addCart, AppliStruct *appliStruct) {
 
     // Add name and image_url to product struct
     if (get_product_info(&current_product) == EXIT_SUCCESS) {
-        AddProduct(appliStruct, current_product);
+        AddProduct(global_struct, current_product);
         printf("success");
         return EXIT_SUCCESS;
     } else {

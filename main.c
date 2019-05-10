@@ -15,14 +15,14 @@ int main(int argc, char **argv) {
     GtkButton *returnCart = NULL;
     GtkButton *addCart = NULL;
     GError *error = NULL;
-    AppliStruct *appliStruct = NULL;
+    GlobalStruct *global_struct = NULL;
 
     gtk_init(&argc, &argv);
 
     builder = gtk_builder_new();
     gtk_builder_add_from_file(builder, "../gui.glade", &error);
 
-    appliStruct = InitStruct(appliStruct, builder);
+    global_struct = InitStruct(global_struct, builder);
 
     if (error) {
         gint code = error->code;
@@ -46,18 +46,18 @@ int main(int argc, char **argv) {
     returnCart = GTK_BUTTON(gtk_builder_get_object(builder, "returncartButton"));
     addCart = GTK_BUTTON(gtk_builder_get_object(builder, "addcartButton"));
 
-    createView(appliStruct);
+    createView(global_struct);
 
-    g_signal_connect(validateButton, "clicked", (GCallback) GetLog, appliStruct);
-    g_signal_connect(appliStruct->mainWindow, "destroy", (GCallback) OnDestroy, NULL);
-    g_signal_connect(appliStruct->scanproduct, "destroy", (GCallback) OnDestroy, NULL);
-    g_signal_connect(showCart, "clicked", (GCallback) OpenCart, appliStruct);
-    g_signal_connect(addCart, "clicked", (GCallback) add_to_cart, appliStruct);
+    g_signal_connect(validateButton, "clicked", (GCallback) GetLog, global_struct);
+    g_signal_connect(global_struct->mainWindow, "destroy", (GCallback) OnDestroy, NULL);
+    g_signal_connect(global_struct->scanproduct, "destroy", (GCallback) OnDestroy, NULL);
+    g_signal_connect(showCart, "clicked", (GCallback) OpenCart, global_struct);
+    g_signal_connect(addCart, "clicked", (GCallback) add_to_cart, global_struct);
     g_signal_connect(cartResume, "destroy", (GCallback) OnDestroy, NULL);
-    g_signal_connect(returnCart, "clicked", (GCallback) ReturnCart, appliStruct);
+    g_signal_connect(returnCart, "clicked", (GCallback) ReturnCart, global_struct);
 
 
-    gtk_widget_show_all(appliStruct->mainWindow);
+    gtk_widget_show_all(global_struct->mainWindow);
 
     gtk_main();
 
