@@ -15,6 +15,7 @@ struct GlobalStruct {
     GtkCellRenderer *cellRenderer;
     GtkTreeViewColumn *pColumn;
     GtkScrolledWindow *scrolledWindow;
+    char *token;
 };
 
 // Enum for GtkTreeView
@@ -37,7 +38,16 @@ struct product {
     char *image_url;
 };
 
-GlobalStruct *InitStruct(GlobalStruct *, GtkBuilder *);
+/*
+ * Struct used to build the result of the CURL http_get
+ * Contains a string (final data) and position/size of the string
+ */
+struct write_result {
+    char *data;
+    int pos;
+};
+
+GlobalStruct *init_global_struct(GtkBuilder *);
 
 int AddProduct(GlobalStruct *global_struct, product product);
 
