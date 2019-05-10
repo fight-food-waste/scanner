@@ -43,8 +43,6 @@ int AddProduct(GlobalStruct *global_struct, product product);
 
 int get_product_info(product *product);
 
-int OnDestroy(GtkWidget *, GlobalStruct *);
-
 int OpenScan(GtkWidget *, GlobalStruct *);
 
 void *OpenCart(GtkWidget *, GlobalStruct *);

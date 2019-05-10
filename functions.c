@@ -15,13 +15,6 @@
 #define URL_SIZE 256
 #define API_ENDPOINT "http://localhost:3000"
 
-
-int OnDestroy(GtkWidget *pWidget, GlobalStruct *global_struct) {
-    gtk_main_quit();
-
-    return EXIT_SUCCESS;
-}
-
 GlobalStruct *InitStruct(GlobalStruct *global_struct, GtkBuilder *builder) {
     global_struct = malloc(sizeof(GlobalStruct));
     if (global_struct) {
