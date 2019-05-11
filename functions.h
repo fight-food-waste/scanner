@@ -68,3 +68,5 @@ static size_t write_response(void *buffer, size_t size, size_t nmemb, void *stre
 static char *http_get(const char *url);
 
 int add_to_cart(GtkWidget *addCart, GlobalStruct *global_struct);
+
+char* get_token(gchar* email, gchar* password, GlobalStruct* global_struct);

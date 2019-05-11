@@ -74,16 +74,32 @@ int GetLog(GtkWidget *valideButton, GlobalStruct *global_struct) {
     const gchar *log = gtk_entry_get_text(GTK_ENTRY(global_struct->loginEntry));
     const gchar *pwd = gtk_entry_get_text(GTK_ENTRY(global_struct->pwdEntry));
 
+
+    global_struct->token = get_token(log, pwd, global_struct);
+
+    if(global_struct->token) {
+        OpenScan(valideButton, global_struct);
+
+        return EXIT_SUCCESS;
+    } else {
+        ErrorLog(global_struct->authError, global_struct);
+
+        return EXIT_FAILURE;
+    }
+}
+
+char* get_token(gchar* email, gchar* password, GlobalStruct* global_struct) {
     CURLcode curl_code;
     struct curl_slist *http_headers;
     long http_code = 0;
+    gchar * token = NULL;
 
     http_headers = NULL;
     // Add header to list of strings
     http_headers = curl_slist_append(http_headers, "content-type: application/x-www-form-urlencoded");
 
     char body[256];
-    sprintf(body, "email=%s&password=%s", log, pwd);
+    sprintf(body, "email=%s&password=%s", email, password);
 
     char *data = NULL; // HTTP document
 
@@ -130,30 +146,26 @@ int GetLog(GtkWidget *valideButton, GlobalStruct *global_struct) {
 
         if (!json_token) {
             fprintf(stderr, "error: on line %d: %s\n", error.line, error.text);
-            return 1;
+            return NULL;
         }
 
-        json_unpack(json_token, "{s:s}", "token", &global_struct->token);
-        if (!global_struct->token) {
+        json_unpack(json_token, "{s:s}", "token", &token);
+        if (!token) {
             fprintf(stderr, "error: product.product_name was not found\n");
-            return 1;
+            return NULL;
         }
 
         // It seems the string can be randomly NOT UTF-8.
         // This converts it to UTF-8 from whatever locale it's using.
-        global_struct->token = g_locale_to_utf8(global_struct->token, -1, NULL, NULL, NULL);
+        token = g_locale_to_utf8(token, -1, NULL, NULL, NULL);
 
 
         // Free json_token
         json_decref(json_token);
 
-        OpenScan(valideButton, global_struct);
-
-        return EXIT_SUCCESS;
+        return token;
     } else {
-        ErrorLog(global_struct->authError, global_struct);
-
-        return EXIT_FAILURE;
+        goto error;
     }
 
     error:
