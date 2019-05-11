@@ -564,7 +564,7 @@ gboolean get_product_from_model(GtkTreeModel *model, GtkTreePath *path, GtkTreeI
 
     // TODO: Send product to API
 
-    g_free(row_nb;
+    g_free(row_nb);
 
     g_free(name);
 
