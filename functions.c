@@ -122,8 +122,6 @@ int GetLog(GtkWidget *valideButton, GlobalStruct *global_struct) {
         // Properly end string
         data[write_result.pos] = '\0';
 
-        char *token = NULL;
-
         json_t *json_token;
         json_error_t error;
 
@@ -135,11 +133,16 @@ int GetLog(GtkWidget *valideButton, GlobalStruct *global_struct) {
             return 1;
         }
 
-        json_unpack(json_token, "{s:s}", "token", &token);
-//        if (!global_struct->token) {
-//            fprintf(stderr, "error: product.product_name was not found\n");
-//            return 1;
-//        }
+        json_unpack(json_token, "{s:s}", "token", &global_struct->token);
+        if (!global_struct->token) {
+            fprintf(stderr, "error: product.product_name was not found\n");
+            return 1;
+        }
+
+        // It seems the string can be randomly NOT UTF-8.
+        // This converts it to UTF-8 from whatever locale it's using.
+        global_struct->token = g_locale_to_utf8(global_struct->token, -1, NULL, NULL, NULL);
+
 
         // Free json_token
         json_decref(json_token);
