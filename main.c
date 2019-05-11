@@ -8,7 +8,6 @@
 
 int main(int argc, char **argv) {
 
-    GtkWidget * cartResume = NULL;
     GtkBuilder *builder = NULL;
     GtkButton *validateButton = NULL;
     GtkButton *showCart = NULL;
@@ -48,12 +47,12 @@ int main(int argc, char **argv) {
 
     createView(global_struct);
 
+    g_signal_connect(global_struct->mainWindow, "destroy", (GCallback) destroy_and_quit, &global_struct);
+    g_signal_connect(global_struct->scanproduct, "destroy", (GCallback) destroy_and_quit, &global_struct);
+
     g_signal_connect(validateButton, "clicked", (GCallback) GetLog, global_struct);
-    g_signal_connect(global_struct->mainWindow, "destroy", (GCallback) gtk_main_quit, NULL);
-    g_signal_connect(global_struct->scanproduct, "destroy", (GCallback) gtk_main_quit, NULL);
     g_signal_connect(showCart, "clicked", (GCallback) OpenCart, global_struct);
     g_signal_connect(addCart, "clicked", (GCallback) add_to_cart, global_struct);
-    g_signal_connect(cartResume, "destroy", (GCallback) gtk_main_quit, NULL);
     g_signal_connect(returnCart, "clicked", (GCallback) ReturnCart, global_struct);
 
 

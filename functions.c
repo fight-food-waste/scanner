@@ -15,9 +15,17 @@
 #define URL_SIZE 256
 #define API_ENDPOINT "http://localhost:3000"
 
+int destroy_and_quit(GlobalStruct **global_struct) {
+    gtk_main_quit();
+
+    free(*global_struct);
+
+    return EXIT_SUCCESS;
+}
 
 GlobalStruct *init_global_struct(GtkBuilder *builder) {
-    GlobalStruct *global_struct = malloc(sizeof(GlobalStruct));
+    GlobalStruct *global_struct = (GlobalStruct *) malloc(sizeof(GlobalStruct));
+
     if (global_struct) {
         global_struct->mainWindow = GTK_WIDGET(gtk_builder_get_object(builder, "homeWindow"));//Init mainWindow
         global_struct->loginEntry = GTK_ENTRY(gtk_builder_get_object(builder, "idEntry"));

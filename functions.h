@@ -54,6 +54,8 @@ int AddProduct(GlobalStruct *global_struct, product product);
 
 int get_product_info(product *product);
 
+int destroy_and_quit(GlobalStruct **);
+
 int OpenScan(GtkWidget *, GlobalStruct *);
 
 void *OpenCart(GtkWidget *, GlobalStruct *);
@@ -72,4 +74,4 @@ int add_to_cart(GtkWidget *addCart, GlobalStruct *global_struct);
 
 char* get_token(gchar* email, gchar* password, GlobalStruct* global_struct);
 
-char *get_user_name();
+char *get_user_name(GlobalStruct *global_struct);
