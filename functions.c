@@ -15,6 +15,7 @@
 #define URL_SIZE 256
 #define API_ENDPOINT "http://localhost:3000"
 
+
 GlobalStruct *init_global_struct(GtkBuilder *builder) {
     GlobalStruct *global_struct = malloc(sizeof(GlobalStruct));
     if (global_struct) {
@@ -23,6 +24,7 @@ GlobalStruct *init_global_struct(GtkBuilder *builder) {
         global_struct->pwdEntry = GTK_ENTRY(gtk_builder_get_object(builder, "pwdEntry"));
         global_struct->scanproduct = GTK_WIDGET(gtk_builder_get_object(builder, "scanWindow"));
         global_struct->authError = GTK_LABEL(gtk_builder_get_object(builder, "authError"));
+        global_struct->scanLabel = GTK_LABEL(gtk_builder_get_object(builder, "scanLabel"));
         global_struct->barrecodeEntry = GTK_ENTRY(gtk_builder_get_object(builder, "barrecodeEntry"));
         global_struct->quantityEntry = GTK_ENTRY(gtk_builder_get_object(builder, "quantityEntry"));
         global_struct->cartWindow = GTK_WIDGET(gtk_builder_get_object(builder, "cartWindow"));
@@ -61,7 +63,6 @@ void *ReturnCart(GtkWidget *pWidget, GlobalStruct *global_struct) {
 
 int ErrorLog(GtkLabel *authError, GlobalStruct *global_struct) {
     const gchar *errorAuth = "Login ou mot de passe invalide";
-    gtk_label_get_text(global_struct->authError);
     gtk_label_set_text(global_struct->authError, errorAuth);
 
     return EXIT_SUCCESS;
@@ -77,7 +78,17 @@ int GetLog(GtkWidget *valideButton, GlobalStruct *global_struct) {
 
     global_struct->token = get_token(log, pwd, global_struct);
 
-    if(global_struct->token) {
+    if (global_struct->token) {
+
+        char *user_name = NULL;
+
+        user_name = get_user_name(global_struct);
+
+        char user_welcome_msg[100];
+        sprintf(user_welcome_msg, "Welcome, %s", user_name);
+
+        gtk_label_set_text(global_struct->scanLabel, user_welcome_msg);
+
         OpenScan(valideButton, global_struct);
 
         return EXIT_SUCCESS;
@@ -88,11 +99,102 @@ int GetLog(GtkWidget *valideButton, GlobalStruct *global_struct) {
     }
 }
 
-char* get_token(gchar* email, gchar* password, GlobalStruct* global_struct) {
+char *get_user_name(GlobalStruct *global_struct) {
     CURLcode curl_code;
     struct curl_slist *http_headers;
     long http_code = 0;
-    gchar * token = NULL;
+    char *user_name = NULL;
+
+    char token_header[100];
+
+    sprintf(token_header, "token: %s", global_struct->token);
+
+    http_headers = NULL;
+    // Add header to list of strings
+    http_headers = curl_slist_append(http_headers, "content-type: application/x-www-form-urlencoded");
+    http_headers = curl_slist_append(http_headers, token_header);
+
+    char *data = NULL; // HTTP document
+
+    // Final result has to be <= RESULT_SIZE
+    data = malloc(RESULT_SIZE);
+    if (!data)
+        goto error;
+
+    // Struct used to build the final result (`data`)
+    struct write_result write_result = {
+            .data = data,
+            .pos = 0
+    };
+
+    CURL *curl_handle;
+
+    curl_handle = curl_easy_init();
+    curl_easy_setopt(curl_handle, CURLOPT_URL, API_ENDPOINT
+            "/donor");
+    curl_easy_setopt(curl_handle, CURLOPT_USERAGENT, "curl/7.54.0");
+    curl_easy_setopt(curl_handle, CURLOPT_HTTPHEADER, http_headers);
+    curl_easy_setopt(curl_handle, CURLOPT_CUSTOMREQUEST, "GET");
+    curl_easy_setopt(curl_handle, CURLOPT_WRITEFUNCTION, write_response); // Defines callback function
+    curl_easy_setopt(curl_handle, CURLOPT_WRITEDATA, &write_result);
+
+    curl_code = curl_easy_perform(curl_handle);
+    curl_easy_getinfo (curl_handle, CURLINFO_RESPONSE_CODE, &http_code);
+
+    curl_easy_cleanup(curl_handle);
+    curl_slist_free_all(http_headers);
+
+    printf("\n%d\n", (int) curl_code);
+
+    if (http_code == 200 && curl_code != CURLE_ABORTED_BY_CALLBACK) {
+        // Properly end string
+        data[write_result.pos] = '\0';
+
+        json_t *json_token;
+        json_error_t error;
+
+        json_token = json_loads(data, 0, &error);
+        free(data);
+
+        if (!json_token) {
+            fprintf(stderr, "error: on line %d: %s\n", error.line, error.text);
+            return NULL;
+        }
+
+        json_unpack(json_token, "{s:s}", "first_name", &user_name);
+        if (!user_name) {
+            fprintf(stderr, "error: product.product_name was not found\n");
+            return NULL;
+        }
+
+        // It seems the string can be randomly NOT UTF-8.
+        // This converts it to UTF-8 from whatever locale it's using.
+        user_name = g_locale_to_utf8(user_name, -1, NULL, NULL, NULL);
+
+
+        // Free json_token
+        json_decref(json_token);
+
+        return user_name;
+    } else {
+        goto error;
+    }
+
+    error:
+    // Clean memory
+    if (data)
+        free(data);
+    if (curl_handle)
+        curl_easy_cleanup(curl_handle);
+    curl_global_cleanup();
+    return NULL;
+}
+
+char *get_token(gchar *email, gchar *password, GlobalStruct *global_struct) {
+    CURLcode curl_code;
+    struct curl_slist *http_headers;
+    long http_code = 0;
+    gchar *token = NULL;
 
     http_headers = NULL;
     // Add header to list of strings

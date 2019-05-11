@@ -16,6 +16,7 @@ struct GlobalStruct {
     GtkTreeViewColumn *pColumn;
     GtkScrolledWindow *scrolledWindow;
     char *token;
+    GtkLabel *scanLabel;
 };
 
 // Enum for GtkTreeView
@@ -70,3 +71,5 @@ static char *http_get(const char *url);
 int add_to_cart(GtkWidget *addCart, GlobalStruct *global_struct);
 
 char* get_token(gchar* email, gchar* password, GlobalStruct* global_struct);
+
+char *get_user_name();
