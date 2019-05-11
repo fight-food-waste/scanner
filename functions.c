@@ -15,8 +15,8 @@
 #define URL_SIZE 256
 #define API_ENDPOINT "http://localhost:3000"
 
-GlobalStruct *InitStruct(GlobalStruct *global_struct, GtkBuilder *builder) {
-    global_struct = malloc(sizeof(GlobalStruct));
+GlobalStruct *init_global_struct(GtkBuilder *builder) {
+    GlobalStruct *global_struct = malloc(sizeof(GlobalStruct));
     if (global_struct) {
         global_struct->mainWindow = GTK_WIDGET(gtk_builder_get_object(builder, "homeWindow"));//Init mainWindow
         global_struct->loginEntry = GTK_ENTRY(gtk_builder_get_object(builder, "idEntry"));
@@ -28,7 +28,7 @@ GlobalStruct *InitStruct(GlobalStruct *global_struct, GtkBuilder *builder) {
         global_struct->cartWindow = GTK_WIDGET(gtk_builder_get_object(builder, "cartWindow"));
         global_struct->listStore = GTK_LIST_STORE(gtk_builder_get_object(builder, "liststore"));
         global_struct->scrolledWindow = GTK_SCROLLED_WINDOW(gtk_builder_get_object(builder, "scrolledWindow"));
-
+        global_struct->token = NULL;
     } else {
         printf("Memory not set\n");
         exit(1);
@@ -69,23 +69,50 @@ int ErrorLog(GtkLabel *authError, GlobalStruct *global_struct) {
 
 int GetLog(GtkWidget *valideButton, GlobalStruct *global_struct) {
 //    Bypass login
-    OpenScan(valideButton, global_struct);
+//    OpenScan(valideButton, global_struct);
 
     const gchar *log = gtk_entry_get_text(GTK_ENTRY(global_struct->loginEntry));
     const gchar *pwd = gtk_entry_get_text(GTK_ENTRY(global_struct->pwdEntry));
 
-    // CURL
 
+    global_struct->token = get_token(log, pwd, global_struct);
+
+    if(global_struct->token) {
+        OpenScan(valideButton, global_struct);
+
+        return EXIT_SUCCESS;
+    } else {
+        ErrorLog(global_struct->authError, global_struct);
+
+        return EXIT_FAILURE;
+    }
+}
+
+char* get_token(gchar* email, gchar* password, GlobalStruct* global_struct) {
     CURLcode curl_code;
     struct curl_slist *http_headers;
     long http_code = 0;
+    gchar * token = NULL;
 
     http_headers = NULL;
     // Add header to list of strings
     http_headers = curl_slist_append(http_headers, "content-type: application/x-www-form-urlencoded");
 
     char body[256];
-    sprintf(body, "email=%s&password=%s", log, pwd);
+    sprintf(body, "email=%s&password=%s", email, password);
+
+    char *data = NULL; // HTTP document
+
+    // Final result has to be <= RESULT_SIZE
+    data = malloc(RESULT_SIZE);
+    if (!data)
+        goto error;
+
+    // Struct used to build the final result (`data`)
+    struct write_result write_result = {
+            .data = data,
+            .pos = 0
+    };
 
     CURL *curl_handle;
 
@@ -96,6 +123,8 @@ int GetLog(GtkWidget *valideButton, GlobalStruct *global_struct) {
     curl_easy_setopt(curl_handle, CURLOPT_USERAGENT, "curl/7.54.0");
     curl_easy_setopt(curl_handle, CURLOPT_HTTPHEADER, http_headers);
     curl_easy_setopt(curl_handle, CURLOPT_CUSTOMREQUEST, "POST");
+    curl_easy_setopt(curl_handle, CURLOPT_WRITEFUNCTION, write_response); // Defines callback function
+    curl_easy_setopt(curl_handle, CURLOPT_WRITEDATA, &write_result);
 
     curl_code = curl_easy_perform(curl_handle);
     curl_easy_getinfo (curl_handle, CURLINFO_RESPONSE_CODE, &http_code);
@@ -106,14 +135,47 @@ int GetLog(GtkWidget *valideButton, GlobalStruct *global_struct) {
     printf("\n%d\n", (int) curl_code);
 
     if (http_code == 200 && curl_code != CURLE_ABORTED_BY_CALLBACK) {
-        OpenScan(valideButton, global_struct);
+        // Properly end string
+        data[write_result.pos] = '\0';
 
-        return EXIT_SUCCESS;
+        json_t *json_token;
+        json_error_t error;
+
+        json_token = json_loads(data, 0, &error);
+        free(data);
+
+        if (!json_token) {
+            fprintf(stderr, "error: on line %d: %s\n", error.line, error.text);
+            return NULL;
+        }
+
+        json_unpack(json_token, "{s:s}", "token", &token);
+        if (!token) {
+            fprintf(stderr, "error: product.product_name was not found\n");
+            return NULL;
+        }
+
+        // It seems the string can be randomly NOT UTF-8.
+        // This converts it to UTF-8 from whatever locale it's using.
+        token = g_locale_to_utf8(token, -1, NULL, NULL, NULL);
+
+
+        // Free json_token
+        json_decref(json_token);
+
+        return token;
     } else {
-        ErrorLog(global_struct->authError, global_struct);
-
-        return EXIT_FAILURE;
+        goto error;
     }
+
+    error:
+    // Clean memory
+    if (data)
+        free(data);
+    if (curl_handle)
+        curl_easy_cleanup(curl_handle);
+    curl_global_cleanup();
+    return NULL;
 }
 
 /*
@@ -138,8 +200,8 @@ int AddProduct(GlobalStruct *global_struct, product product) {
 GtkTreeView *createView(GlobalStruct *global_struct) {
     // Create new GtkListStore with types columns
     global_struct->listStore = gtk_list_store_new(N_COLUMNS,      // 2
-                                                G_TYPE_LONG,    // quantity
-                                                G_TYPE_STRING); // name
+                                                  G_TYPE_LONG,    // quantity
+                                                  G_TYPE_STRING); // name
 
     // Creates a new GtkTreeView widget with the model initialized to global_struct->listStore
     global_struct->listView = gtk_tree_view_new_with_model(GTK_TREE_MODEL(global_struct->listStore));
@@ -148,14 +210,14 @@ GtkTreeView *createView(GlobalStruct *global_struct) {
     global_struct->cellRenderer = gtk_cell_renderer_text_new();
     // Creates GtkTreeViewColumn for "Quantity"/QTY_COLUMN
     global_struct->pColumn = gtk_tree_view_column_new_with_attributes("Quantity", global_struct->cellRenderer, "text",
-                                                                    QTY_COLUMN, NULL);
+                                                                      QTY_COLUMN, NULL);
     // Appends global_struct->pColumn to the list of columns
     gtk_tree_view_append_column(GTK_TREE_VIEW(global_struct->listView), global_struct->pColumn);
 
     // Repeat for "Name"/NAME_COLUMN
     global_struct->cellRenderer = gtk_cell_renderer_text_new();
     global_struct->pColumn = gtk_tree_view_column_new_with_attributes("Name", global_struct->cellRenderer, "text",
-                                                                    NAME_COLUMN, NULL);
+                                                                      NAME_COLUMN, NULL);
     gtk_tree_view_append_column(GTK_TREE_VIEW(global_struct->listView), global_struct->pColumn);
 
     // Add GtkTreeView to GtkScrolledWindow
@@ -277,15 +339,6 @@ int get_product_info(product *product) {
     return 0;
 }
 
-
-/*
- * Struct used to build the result of the CURL http_get
- * Contains a string (final data) and position/size of the string
- */
-struct write_result {
-    char *data;
-    int pos;
-};
 
 /*
  * Callback function called by CURL

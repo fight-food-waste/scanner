@@ -22,7 +22,7 @@ int main(int argc, char **argv) {
     builder = gtk_builder_new();
     gtk_builder_add_from_file(builder, "../gui.glade", &error);
 
-    global_struct = InitStruct(global_struct, builder);
+    global_struct = init_global_struct(builder);
 
     if (error) {
         gint code = error->code;
