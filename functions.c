@@ -36,7 +36,7 @@ GlobalStruct *init_global_struct(GtkBuilder *builder) {
         global_struct->barrecodeEntry = GTK_ENTRY(gtk_builder_get_object(builder, "barrecodeEntry"));
         global_struct->quantityEntry = GTK_ENTRY(gtk_builder_get_object(builder, "quantityEntry"));
         global_struct->cartWindow = GTK_WIDGET(gtk_builder_get_object(builder, "cartWindow"));
-        global_struct->listStore = GTK_LIST_STORE(gtk_builder_get_object(builder, "liststore"));
+        //global_struct->listStore = GTK_LIST_STORE(gtk_builder_get_object(builder, "liststore"));
         global_struct->scrolledWindow = GTK_SCROLLED_WINDOW(gtk_builder_get_object(builder, "scrolledWindow"));
         global_struct->token = NULL;
     } else {
@@ -46,14 +46,14 @@ GlobalStruct *init_global_struct(GtkBuilder *builder) {
     return global_struct;
 }
 
-int OpenScan(GtkWidget *valideButton, GlobalStruct *global_struct) {
+int OpenScan(GtkWidget *widget, GlobalStruct *global_struct) {
     gtk_widget_show_all(global_struct->scanproduct);
     gtk_widget_hide(global_struct->mainWindow);
 
     return EXIT_SUCCESS;
 }
 
-void *OpenCart(GtkWidget *pWidget, GlobalStruct *global_struct) {
+void *OpenCart(GtkWidget *widget, GlobalStruct *global_struct) {
     gtk_widget_show_all(global_struct->cartWindow);
     gtk_widget_hide(global_struct->scanproduct);
 
@@ -61,7 +61,7 @@ void *OpenCart(GtkWidget *pWidget, GlobalStruct *global_struct) {
 }
 
 
-void *ReturnCart(GtkWidget *pWidget, GlobalStruct *global_struct) {
+void *ReturnCart(GtkWidget *widget, GlobalStruct *global_struct) {
     gtk_widget_show_all(global_struct->scanproduct);
     gtk_widget_hide(global_struct->cartWindow);
 
@@ -341,7 +341,7 @@ GtkTreeView *createView(GlobalStruct *global_struct) {
  * Extract product values from GTK,
  * and prepare to add product to cart
  */
-int add_to_cart(GtkWidget *addCart, GlobalStruct *global_struct) {
+int add_to_cart(GtkWidget *widget, GlobalStruct *global_struct) {
 
     struct product current_product;
     gchar *endPtr; // for strol
@@ -363,7 +363,6 @@ int add_to_cart(GtkWidget *addCart, GlobalStruct *global_struct) {
     // Add name and image_url to product struct
     if (get_product_info(&current_product) == EXIT_SUCCESS) {
         AddProduct(global_struct, current_product);
-        printf("success");
         return EXIT_SUCCESS;
     } else {
         printf("fail");
@@ -538,4 +537,36 @@ static char *http_get(const char *url) {
         curl_easy_cleanup(curl);
     curl_global_cleanup();
     return NULL;
+}
+
+char *send_cart(GtkWidget *widget, GlobalStruct *global_struct) {
+
+    // Iterate trough the GtkTreeModel, aka the list's rows
+    gtk_tree_model_foreach(GTK_TREE_MODEL(global_struct->listStore), get_product_from_model, NULL);
+
+
+    return NULL;
+}
+
+gboolean get_product_from_model(GtkTreeModel *model, GtkTreePath *path, GtkTreeIter *iter, gpointer user_data) {
+    gchar *name;
+    gchar *row_nb;
+    glong quantity;
+
+    gtk_tree_model_get(model, iter,
+                       QTY_COLUMN, &quantity,
+                       NAME_COLUMN, &name,
+                       -1);
+
+    row_nb = gtk_tree_path_to_string(path);
+
+    g_print("Row %s: %ld %s\n", row_nb, quantity, name);
+
+    // TODO: Send product to API
+
+    g_free(row_nb;
+
+    g_free(name);
+
+    return FALSE;
 }

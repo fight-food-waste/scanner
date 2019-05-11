@@ -72,6 +72,10 @@ static char *http_get(const char *url);
 
 int add_to_cart(GtkWidget *addCart, GlobalStruct *global_struct);
 
-char* get_token(gchar* email, gchar* password, GlobalStruct* global_struct);
+char *get_token(gchar *email, gchar *password, GlobalStruct *global_struct);
 
 char *get_user_name(GlobalStruct *global_struct);
+
+char *send_cart(GtkWidget *, GlobalStruct *);
+
+gboolean get_product_from_model(GtkTreeModel *model, GtkTreePath *path, GtkTreeIter *iter, gpointer user_data);

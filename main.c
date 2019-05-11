@@ -10,6 +10,7 @@ int main(int argc, char **argv) {
 
     GtkBuilder *builder = NULL;
     GtkButton *validateButton = NULL;
+    GtkButton *validecartButton = NULL;
     GtkButton *showCart = NULL;
     GtkButton *returnCart = NULL;
     GtkButton *addCart = NULL;
@@ -44,6 +45,8 @@ int main(int argc, char **argv) {
     showCart = GTK_BUTTON(gtk_builder_get_object(builder, "cartButton"));
     returnCart = GTK_BUTTON(gtk_builder_get_object(builder, "returncartButton"));
     addCart = GTK_BUTTON(gtk_builder_get_object(builder, "addcartButton"));
+    validecartButton = GTK_BUTTON(gtk_builder_get_object(builder, "validecartButton"));
+
 
     createView(global_struct);
 
@@ -51,9 +54,14 @@ int main(int argc, char **argv) {
     g_signal_connect(global_struct->scanproduct, "destroy", (GCallback) destroy_and_quit, &global_struct);
 
     g_signal_connect(validateButton, "clicked", (GCallback) GetLog, global_struct);
+
+
     g_signal_connect(showCart, "clicked", (GCallback) OpenCart, global_struct);
     g_signal_connect(addCart, "clicked", (GCallback) add_to_cart, global_struct);
     g_signal_connect(returnCart, "clicked", (GCallback) ReturnCart, global_struct);
+    g_signal_connect(validecartButton, "clicked", (GCallback) send_cart, global_struct);
+
+
 
 
     gtk_widget_show_all(global_struct->mainWindow);
