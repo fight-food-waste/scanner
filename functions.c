@@ -199,7 +199,7 @@ char *get_user_name(char *token) {
     return NULL;
 }
 
-char *get_token(gchar *email, gchar *password, GlobalStruct *global_struct) {
+char *get_token(const gchar *email, const gchar *password, GlobalStruct *global_struct) {
     CURLcode curl_code;
     struct curl_slist *http_headers;
     long http_code = 0;

@@ -72,7 +72,7 @@ static char *http_get(const char *url);
 
 int add_to_cart(GtkWidget *addCart, GlobalStruct *global_struct);
 
-char *get_token(gchar *email, gchar *password, GlobalStruct *global_struct);
+char *get_token(const gchar *email, const gchar *password, GlobalStruct *global_struct);
 
 char *get_user_name(char *token);
 
