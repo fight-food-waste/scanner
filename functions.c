@@ -355,8 +355,8 @@ int add_to_cart(GtkWidget *widget, GlobalStruct *global_struct) {
     struct product current_product;
     gchar *endPtr; // for strol
 
-    const gchar *raw_code = gtk_entry_get_text(GTK_ENTRY(global_struct->barrecodeEntry));
-    const gchar *raw_quantity = gtk_entry_get_text(GTK_ENTRY(global_struct->quantityEntry));
+    const gchar *raw_code = gtk_entry_get_text(global_struct->barrecodeEntry);
+    const gchar *raw_quantity = gtk_entry_get_text(global_struct->quantityEntry);
 
     // strol returns the converted int as a long int, else 0 is returned.
     current_product.barcode = strtol(raw_code, &endPtr, 10);
@@ -371,7 +371,17 @@ int add_to_cart(GtkWidget *widget, GlobalStruct *global_struct) {
 
     // Add name and image_url to product struct
     if (get_product_info(&current_product) == EXIT_SUCCESS) {
+
+        // Add to product to cart
         AddProduct(global_struct, current_product);
+
+        // Reset GtkEntries
+        gtk_entry_set_text(global_struct->barrecodeEntry, "");
+        gtk_entry_set_text(global_struct->quantityEntry, "");
+
+        // Set focus on the barcode GtkEntry
+        gtk_widget_grab_focus(GTK_WIDGET(global_struct->barrecodeEntry));
+
         return EXIT_SUCCESS;
     } else {
         printf("fail");
