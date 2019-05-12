@@ -17,14 +17,15 @@ struct GlobalStruct {
     GtkScrolledWindow *scrolledWindow;
     char *token;
     GtkLabel *scanLabel;
+    int bundle_id;
 };
 
 // Enum for GtkTreeView
 enum {
-    QTY_COLUMN = 0,
+    BARCODE_COLUMN,
     NAME_COLUMN,
-    N_COLUMNS = 2
-
+    QTY_COLUMN,
+    N_COLUMNS
 };
 
 /*
@@ -33,10 +34,9 @@ enum {
 typedef struct product product;
 
 struct product {
-    long code;
+    long barcode;
     long quantity;
     char *name;
-    char *image_url;
 };
 
 /*
@@ -74,8 +74,12 @@ int add_to_cart(GtkWidget *addCart, GlobalStruct *global_struct);
 
 char *get_token(gchar *email, gchar *password, GlobalStruct *global_struct);
 
-char *get_user_name(GlobalStruct *global_struct);
+char *get_user_name(char *token);
 
 char *send_cart(GtkWidget *, GlobalStruct *);
 
+int create_bundle(char *token);
+
 gboolean get_product_from_model(GtkTreeModel *model, GtkTreePath *path, GtkTreeIter *iter, gpointer user_data);
+
+int send_product(GlobalStruct *global_struct, product product);

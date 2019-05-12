@@ -39,6 +39,7 @@ GlobalStruct *init_global_struct(GtkBuilder *builder) {
         //global_struct->listStore = GTK_LIST_STORE(gtk_builder_get_object(builder, "liststore"));
         global_struct->scrolledWindow = GTK_SCROLLED_WINDOW(gtk_builder_get_object(builder, "scrolledWindow"));
         global_struct->token = NULL;
+        global_struct->bundle_id = 0;
     } else {
         printf("Memory not set\n");
         exit(1);
@@ -90,7 +91,7 @@ int GetLog(GtkWidget *valideButton, GlobalStruct *global_struct) {
 
         char *user_name = NULL;
 
-        user_name = get_user_name(global_struct);
+        user_name = get_user_name(global_struct->token);
 
         char user_welcome_msg[100];
         sprintf(user_welcome_msg, "Welcome, %s", user_name);
@@ -107,7 +108,7 @@ int GetLog(GtkWidget *valideButton, GlobalStruct *global_struct) {
     }
 }
 
-char *get_user_name(GlobalStruct *global_struct) {
+char *get_user_name(char *token) {
     CURLcode curl_code;
     struct curl_slist *http_headers;
     long http_code = 0;
@@ -115,7 +116,7 @@ char *get_user_name(GlobalStruct *global_struct) {
 
     char token_header[100];
 
-    sprintf(token_header, "token: %s", global_struct->token);
+    sprintf(token_header, "token: %s", token);
 
     http_headers = NULL;
     // Add header to list of strings
@@ -297,8 +298,9 @@ int AddProduct(GlobalStruct *global_struct, product product) {
 
     gtk_list_store_append(global_struct->listStore, &iter);
     gtk_list_store_set(global_struct->listStore, &iter,
-                       QTY_COLUMN, (glong) product.quantity,
+                       BARCODE_COLUMN, (glong) product.barcode,
                        NAME_COLUMN, (gchar *) product.name,
+                       QTY_COLUMN, (glong) product.quantity,
                        -1);
 
     return EXIT_SUCCESS;
@@ -309,12 +311,27 @@ int AddProduct(GlobalStruct *global_struct, product product) {
  */
 GtkTreeView *createView(GlobalStruct *global_struct) {
     // Create new GtkListStore with types columns
-    global_struct->listStore = gtk_list_store_new(N_COLUMNS,      // 2
+    global_struct->listStore = gtk_list_store_new(N_COLUMNS,      // 3
                                                   G_TYPE_LONG,    // quantity
-                                                  G_TYPE_STRING); // name
+                                                  G_TYPE_STRING,  // name
+                                                  G_TYPE_LONG);   // barcode
 
     // Creates a new GtkTreeView widget with the model initialized to global_struct->listStore
     global_struct->listView = gtk_tree_view_new_with_model(GTK_TREE_MODEL(global_struct->listStore));
+
+
+    // Repeat for "Barcode"/BARCODE_COLUMN
+    global_struct->cellRenderer = gtk_cell_renderer_text_new();
+    global_struct->pColumn = gtk_tree_view_column_new_with_attributes("Barcode", global_struct->cellRenderer, "text",
+                                                                      BARCODE_COLUMN, NULL);
+    gtk_tree_view_append_column(GTK_TREE_VIEW(global_struct->listView), global_struct->pColumn);
+
+
+    // Repeat for "Name"/NAME_COLUMN
+    global_struct->cellRenderer = gtk_cell_renderer_text_new();
+    global_struct->pColumn = gtk_tree_view_column_new_with_attributes("Name", global_struct->cellRenderer, "text",
+                                                                      NAME_COLUMN, NULL);
+    gtk_tree_view_append_column(GTK_TREE_VIEW(global_struct->listView), global_struct->pColumn);
 
     // Creates a new GtkCellRendererText
     global_struct->cellRenderer = gtk_cell_renderer_text_new();
@@ -324,11 +341,9 @@ GtkTreeView *createView(GlobalStruct *global_struct) {
     // Appends global_struct->pColumn to the list of columns
     gtk_tree_view_append_column(GTK_TREE_VIEW(global_struct->listView), global_struct->pColumn);
 
-    // Repeat for "Name"/NAME_COLUMN
-    global_struct->cellRenderer = gtk_cell_renderer_text_new();
-    global_struct->pColumn = gtk_tree_view_column_new_with_attributes("Name", global_struct->cellRenderer, "text",
-                                                                      NAME_COLUMN, NULL);
-    gtk_tree_view_append_column(GTK_TREE_VIEW(global_struct->listView), global_struct->pColumn);
+
+
+
 
     // Add GtkTreeView to GtkScrolledWindow
     gtk_container_add(GTK_CONTAINER(global_struct->scrolledWindow), global_struct->listView);
@@ -350,13 +365,13 @@ int add_to_cart(GtkWidget *widget, GlobalStruct *global_struct) {
     const gchar *raw_quantity = gtk_entry_get_text(GTK_ENTRY(global_struct->quantityEntry));
 
     // strol returns the converted int as a long int, else 0 is returned.
-    current_product.code = strtol(raw_code, &endPtr, 10);
+    current_product.barcode = strtol(raw_code, &endPtr, 10);
     current_product.quantity = strtol(raw_quantity, &endPtr, 10);
 
-    if (current_product.code == 0 || current_product.quantity == 0) {
+    if (current_product.barcode == 0 || current_product.quantity == 0) {
         return EXIT_FAILURE;
     } else {
-        printf("%ld\n", current_product.code);
+        printf("%ld\n", current_product.barcode);
         printf("%ld\n", current_product.quantity);
     }
 
@@ -382,7 +397,7 @@ int get_product_info(product *product) {
     json_error_t error;
 
     // Build URL
-    snprintf(url, URL_SIZE, "https://world.openfoodfacts.org/api/v0/product/%ld.json", product->code);
+    snprintf(url, URL_SIZE, "https://world.openfoodfacts.org/api/v0/product/%ld.json", product->barcode);
 
     // Get JSON from API with CURL
     http_document = http_get(url);
@@ -407,7 +422,6 @@ int get_product_info(product *product) {
     // We'll extract these value from json_document
     json_t *product_json;
     int product_status;
-//    char *product_name, *product_image_url = NULL;
 
     // Check status property of the json_document
     json_unpack(json_document, "{s:i}", "status", &product_status);
@@ -432,16 +446,6 @@ int get_product_info(product *product) {
     // It seems the string can be randomly NOT UTF-8.
     // This converts it to UTF-8 from whatever locale it's using.
     product->name = g_locale_to_utf8(product->name, -1, NULL, NULL, NULL);
-
-    json_unpack(product_json, "{s:s}", "image_url", &product->image_url);
-    if (!product->image_url) {
-        fprintf(stderr, "error: product.product_image_url was not found\n");
-        return 1;
-    }
-
-    printf("Product name: %s\n", product->name);
-    printf("Product image: %s\n", product->image_url);
-
 
     // Free json_document
     json_decref(json_document);
@@ -541,32 +545,205 @@ static char *http_get(const char *url) {
 
 char *send_cart(GtkWidget *widget, GlobalStruct *global_struct) {
 
+    global_struct->bundle_id = create_bundle(global_struct->token);
+
+    if(global_struct->bundle_id == 0){
+        // error
+        return NULL;
+    }
+
     // Iterate trough the GtkTreeModel, aka the list's rows
-    gtk_tree_model_foreach(GTK_TREE_MODEL(global_struct->listStore), get_product_from_model, NULL);
+    gtk_tree_model_foreach(GTK_TREE_MODEL(global_struct->listStore), get_product_from_model, global_struct);
 
+    // TODO: Handle success
+return NULL;
+}
 
-    return NULL;
+/*
+ * Create a bundle via the API and returns its id
+ */
+int create_bundle(char *token) {
+    CURLcode curl_code;
+    struct curl_slist *http_headers;
+    long http_code = 0;
+    int bundle_id = 0;
+
+    char token_header[100];
+
+    sprintf(token_header, "token: %s", token);
+
+    http_headers = NULL;
+    // Add header to list of strings
+    http_headers = curl_slist_append(http_headers, "content-type: application/x-www-form-urlencoded");
+    http_headers = curl_slist_append(http_headers, token_header);
+
+    char *data = NULL; // HTTP document
+
+    // Final result has to be <= RESULT_SIZE
+    data = malloc(RESULT_SIZE);
+    if (!data)
+        goto error;
+
+    // Struct used to build the final result (`data`)
+    struct write_result write_result = {
+            .data = data,
+            .pos = 0
+    };
+
+    CURL *curl_handle;
+
+    curl_handle = curl_easy_init();
+    curl_easy_setopt(curl_handle, CURLOPT_URL, API_ENDPOINT
+            "/bundle");
+    curl_easy_setopt(curl_handle, CURLOPT_USERAGENT, "curl/7.54.0");
+    curl_easy_setopt(curl_handle, CURLOPT_HTTPHEADER, http_headers);
+    curl_easy_setopt(curl_handle, CURLOPT_CUSTOMREQUEST, "POST");
+    curl_easy_setopt(curl_handle, CURLOPT_WRITEFUNCTION, write_response); // Defines callback function
+    curl_easy_setopt(curl_handle, CURLOPT_WRITEDATA, &write_result);
+
+    curl_code = curl_easy_perform(curl_handle);
+    curl_easy_getinfo (curl_handle, CURLINFO_RESPONSE_CODE, &http_code);
+
+    curl_easy_cleanup(curl_handle);
+    curl_slist_free_all(http_headers);
+
+    printf("\n%d\n", (int) curl_code);
+
+    if (http_code == 200 && curl_code != CURLE_ABORTED_BY_CALLBACK) {
+        // Properly end string
+        data[write_result.pos] = '\0';
+
+        json_t *json_bundle;
+        json_error_t error;
+
+        json_bundle = json_loads(data, 0, &error);
+        free(data);
+
+        if (!json_bundle) {
+            fprintf(stderr, "error: on line %d: %s\n", error.line, error.text);
+            return 0;
+        }
+
+        json_unpack(json_bundle, "{s:i}", "id", &bundle_id);
+        if (!bundle_id) {
+            fprintf(stderr, "error: product.product_name was not found\n");
+            return 0;
+        }
+
+        // Free json_bundle
+        json_decref(json_bundle);
+
+        return bundle_id;
+    } else {
+        goto error;
+    }
+
+    error:
+    // Clean memory
+    if (data)
+        free(data);
+    if (curl_handle)
+        curl_easy_cleanup(curl_handle);
+    curl_global_cleanup();
+    return 0;
 }
 
 gboolean get_product_from_model(GtkTreeModel *model, GtkTreePath *path, GtkTreeIter *iter, gpointer user_data) {
-    gchar *name;
+//    gchar *name;
     gchar *row_nb;
-    glong quantity;
+//    glong quantity;
+    product current_product;
+
+    GlobalStruct *global_struct = user_data;
+
 
     gtk_tree_model_get(model, iter,
-                       QTY_COLUMN, &quantity,
-                       NAME_COLUMN, &name,
+                       BARCODE_COLUMN, &current_product.barcode,
+                       NAME_COLUMN, &current_product.name,
+                       QTY_COLUMN, &current_product.quantity,
                        -1);
 
     row_nb = gtk_tree_path_to_string(path);
 
-    g_print("Row %s: %ld %s\n", row_nb, quantity, name);
+    g_print("Row %s: %ld %s\n", row_nb, current_product.quantity, current_product.name);
 
-    // TODO: Send product to API
 
+    // TODO: Send product to API, with bundle id
+    send_product(global_struct, current_product);
+
+    // osef de row_nb en fait non ?
     g_free(row_nb);
 
-    g_free(name);
 
     return FALSE;
+}
+
+int send_product(GlobalStruct* global_struct, product product) {
+
+//    struct GlobalStruct *my_struct = *global_struct;
+
+    CURLcode curl_code;
+    struct curl_slist *http_headers;
+    long http_code = 0;
+    char *data = NULL; // HTTP document
+    http_headers = NULL;
+    char body[256];
+
+    char token_header[100];
+    sprintf(token_header, "token: %s", global_struct->token);
+
+    // Add header to list of strings
+    http_headers = curl_slist_append(http_headers, "content-type: application/x-www-form-urlencoded");
+    http_headers = curl_slist_append(http_headers, token_header);
+
+
+    // Final result has to be <= RESULT_SIZE
+    data = malloc(RESULT_SIZE);
+    if (!data)
+        goto error;
+
+    // Struct used to build the final result (`data`)
+    struct write_result write_result = {
+            .data = data,
+            .pos = 0
+    };
+
+    // TODO: Handle "expiration_date"
+    sprintf(body, "name=%s&barcode=%ld&quantity=%ld&bundle_id=%d&expiration_date=2019-07-23", product.name, product.barcode, product.quantity, global_struct->bundle_id);
+
+    CURL *curl_handle;
+
+    curl_handle = curl_easy_init();
+    curl_easy_setopt(curl_handle, CURLOPT_URL, API_ENDPOINT
+            "/product");
+    curl_easy_setopt(curl_handle, CURLOPT_POSTFIELDS, body);
+    curl_easy_setopt(curl_handle, CURLOPT_USERAGENT, "curl/7.54.0");
+    curl_easy_setopt(curl_handle, CURLOPT_HTTPHEADER, http_headers);
+    curl_easy_setopt(curl_handle, CURLOPT_CUSTOMREQUEST, "POST");
+//    curl_easy_setopt(curl_handle, CURLOPT_WRITEFUNCTION, write_response); // Defines callback function
+//    curl_easy_setopt(curl_handle, CURLOPT_WRITEDATA, &write_result);
+
+    curl_code = curl_easy_perform(curl_handle);
+    curl_easy_getinfo (curl_handle, CURLINFO_RESPONSE_CODE, &http_code);
+
+    curl_easy_cleanup(curl_handle);
+    curl_slist_free_all(http_headers);
+
+    printf("\n%d\n", (int) curl_code);
+
+    if (http_code == 200 && curl_code != CURLE_ABORTED_BY_CALLBACK) {
+
+        return EXIT_SUCCESS;
+    } else {
+        goto error;
+    }
+
+    error:
+    // Clean memory
+    if (data)
+        free(data);
+    if (curl_handle)
+        curl_easy_cleanup(curl_handle);
+    curl_global_cleanup();
+    return EXIT_FAILURE;
 }
