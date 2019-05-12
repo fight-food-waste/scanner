@@ -10,11 +10,7 @@ struct GlobalStruct {
     GtkEntry *barrecodeEntry;
     GtkEntry *quantityEntry;
     GtkWidget *cartWindow;
-    GtkListStore *listStore;
-    GtkWidget *listView;
-    GtkCellRenderer *cellRenderer;
-    GtkTreeViewColumn *pColumn;
-    GtkScrolledWindow *scrolledWindow;
+    GtkListStore *list_store;
     char *token;
     GtkLabel *scanLabel;
     int bundle_id;
@@ -62,7 +58,7 @@ void *OpenCart(GtkWidget *, GlobalStruct *);
 
 void *ReturnCart(GtkWidget *, GlobalStruct *);
 
-GtkTreeView *createView(GlobalStruct *);
+GtkWidget *create_gtk_tree_view(GlobalStruct *global_struct);
 
 int GetLog(GtkWidget *valideButton, GlobalStruct *global_struct);
 
@@ -83,3 +79,5 @@ int create_bundle(char *token);
 gboolean get_product_from_model(GtkTreeModel *model, GtkTreePath *path, GtkTreeIter *iter, gpointer user_data);
 
 int send_product(GlobalStruct *global_struct, product product);
+
+GtkListStore *init_list_store();

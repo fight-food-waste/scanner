@@ -16,6 +16,8 @@ int main(int argc, char **argv) {
     GtkButton *addCart = NULL;
     GError *error = NULL;
     GlobalStruct *global_struct = NULL;
+    GtkWidget *tree_view_widget = NULL;
+    GtkScrolledWindow *cart_scrolled_window = NULL;
 
     gtk_init(&argc, &argv);
 
@@ -41,27 +43,30 @@ int main(int argc, char **argv) {
 
     gtk_builder_connect_signals(builder, NULL);
 
+    // Import some GTK objects from GtkBuilder
     validateButton = GTK_BUTTON(gtk_builder_get_object(builder, "validateButton"));
     showCart = GTK_BUTTON(gtk_builder_get_object(builder, "cartButton"));
     returnCart = GTK_BUTTON(gtk_builder_get_object(builder, "returncartButton"));
     addCart = GTK_BUTTON(gtk_builder_get_object(builder, "addcartButton"));
     validecartButton = GTK_BUTTON(gtk_builder_get_object(builder, "validecartButton"));
+    cart_scrolled_window = GTK_SCROLLED_WINDOW(gtk_builder_get_object(builder, "scrolledWindow"));
 
+    // Get the GtkTreeView widget with its columns
+    tree_view_widget = create_gtk_tree_view(global_struct);
 
-    createView(global_struct);
+    // Add GtkTreeView to GtkScrolledWindow
+    gtk_container_add(GTK_CONTAINER(cart_scrolled_window), tree_view_widget);
 
+    // Destroy and quit the app when the close button is clicked
     g_signal_connect(global_struct->mainWindow, "destroy", (GCallback) destroy_and_quit, &global_struct);
     g_signal_connect(global_struct->scanproduct, "destroy", (GCallback) destroy_and_quit, &global_struct);
 
+    // Connect buttons with callback functions
     g_signal_connect(validateButton, "clicked", (GCallback) GetLog, global_struct);
-
-
     g_signal_connect(showCart, "clicked", (GCallback) OpenCart, global_struct);
     g_signal_connect(addCart, "clicked", (GCallback) add_to_cart, global_struct);
     g_signal_connect(returnCart, "clicked", (GCallback) ReturnCart, global_struct);
     g_signal_connect(validecartButton, "clicked", (GCallback) send_cart, global_struct);
-
-
 
 
     gtk_widget_show_all(global_struct->mainWindow);

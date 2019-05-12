@@ -36,8 +36,7 @@ GlobalStruct *init_global_struct(GtkBuilder *builder) {
         global_struct->barrecodeEntry = GTK_ENTRY(gtk_builder_get_object(builder, "barrecodeEntry"));
         global_struct->quantityEntry = GTK_ENTRY(gtk_builder_get_object(builder, "quantityEntry"));
         global_struct->cartWindow = GTK_WIDGET(gtk_builder_get_object(builder, "cartWindow"));
-        //global_struct->listStore = GTK_LIST_STORE(gtk_builder_get_object(builder, "liststore"));
-        global_struct->scrolledWindow = GTK_SCROLLED_WINDOW(gtk_builder_get_object(builder, "scrolledWindow"));
+        global_struct->list_store = init_list_store();
         global_struct->token = NULL;
         global_struct->bundle_id = 0;
     } else {
@@ -78,8 +77,6 @@ int ErrorLog(GtkLabel *authError, GlobalStruct *global_struct) {
 }
 
 int GetLog(GtkWidget *valideButton, GlobalStruct *global_struct) {
-//    Bypass login
-//    OpenScan(valideButton, global_struct);
 
     const gchar *log = gtk_entry_get_text(GTK_ENTRY(global_struct->loginEntry));
     const gchar *pwd = gtk_entry_get_text(GTK_ENTRY(global_struct->pwdEntry));
@@ -296,8 +293,8 @@ int AddProduct(GlobalStruct *global_struct, product product) {
 
     GtkTreeIter iter;
 
-    gtk_list_store_append(global_struct->listStore, &iter);
-    gtk_list_store_set(global_struct->listStore, &iter,
+    gtk_list_store_append(global_struct->list_store, &iter);
+    gtk_list_store_set(global_struct->list_store, &iter,
                        BARCODE_COLUMN, (glong) product.barcode,
                        NAME_COLUMN, (gchar *) product.name,
                        QTY_COLUMN, (glong) product.quantity,
@@ -306,49 +303,46 @@ int AddProduct(GlobalStruct *global_struct, product product) {
     return EXIT_SUCCESS;
 }
 
-/*
- * Init the GtkTreeView
- */
-GtkTreeView *createView(GlobalStruct *global_struct) {
-    // Create new GtkListStore with types columns
-    global_struct->listStore = gtk_list_store_new(N_COLUMNS,      // 3
+GtkListStore *init_list_store() {
+    // Create new GtkListStore with typed columns
+    GtkListStore *list_store = gtk_list_store_new(N_COLUMNS,      // 3
                                                   G_TYPE_LONG,    // quantity
                                                   G_TYPE_STRING,  // name
                                                   G_TYPE_LONG);   // barcode
 
-    // Creates a new GtkTreeView widget with the model initialized to global_struct->listStore
-    global_struct->listView = gtk_tree_view_new_with_model(GTK_TREE_MODEL(global_struct->listStore));
+    return list_store;
+}
 
+/*
+ * Init the GtkTreeView widget
+ *
+ */
+GtkWidget *create_gtk_tree_view(GlobalStruct *global_struct) {
 
-    // Repeat for "Barcode"/BARCODE_COLUMN
-    global_struct->cellRenderer = gtk_cell_renderer_text_new();
-    global_struct->pColumn = gtk_tree_view_column_new_with_attributes("Barcode", global_struct->cellRenderer, "text",
-                                                                      BARCODE_COLUMN, NULL);
-    gtk_tree_view_append_column(GTK_TREE_VIEW(global_struct->listView), global_struct->pColumn);
+    // Create new empty columns
+    GtkTreeViewColumn *barcode_column, *name_column, *quantity_column;
+    // Create a new GtkCellRendererText to render text in a cell
+    GtkCellRenderer *cell_renderer = gtk_cell_renderer_text_new();
+    //
+    GtkWidget *tree_view_widget;
 
+    // Create a new GtkTreeView widget with the model initialized to the GtkListStore
+    tree_view_widget = gtk_tree_view_new_with_model(GTK_TREE_MODEL(global_struct->list_store));
 
-    // Repeat for "Name"/NAME_COLUMN
-    global_struct->cellRenderer = gtk_cell_renderer_text_new();
-    global_struct->pColumn = gtk_tree_view_column_new_with_attributes("Name", global_struct->cellRenderer, "text",
-                                                                      NAME_COLUMN, NULL);
-    gtk_tree_view_append_column(GTK_TREE_VIEW(global_struct->listView), global_struct->pColumn);
+    // Fill the GtkTreeViewColumns
+    barcode_column = gtk_tree_view_column_new_with_attributes("Barcode", cell_renderer, "text",
+                                                              BARCODE_COLUMN, NULL);
+    name_column = gtk_tree_view_column_new_with_attributes("Name", cell_renderer, "text",
+                                                           NAME_COLUMN, NULL);
+    quantity_column = gtk_tree_view_column_new_with_attributes("Quantity", cell_renderer, "text",
+                                                               QTY_COLUMN, NULL);
 
-    // Creates a new GtkCellRendererText
-    global_struct->cellRenderer = gtk_cell_renderer_text_new();
-    // Creates GtkTreeViewColumn for "Quantity"/QTY_COLUMN
-    global_struct->pColumn = gtk_tree_view_column_new_with_attributes("Quantity", global_struct->cellRenderer, "text",
-                                                                      QTY_COLUMN, NULL);
-    // Appends global_struct->pColumn to the list of columns
-    gtk_tree_view_append_column(GTK_TREE_VIEW(global_struct->listView), global_struct->pColumn);
+    // Append columns to the list of columns aka the GtkTreeView
+    gtk_tree_view_append_column(GTK_TREE_VIEW(tree_view_widget), barcode_column);
+    gtk_tree_view_append_column(GTK_TREE_VIEW(tree_view_widget), name_column);
+    gtk_tree_view_append_column(GTK_TREE_VIEW(tree_view_widget), quantity_column);
 
-
-
-
-
-    // Add GtkTreeView to GtkScrolledWindow
-    gtk_container_add(GTK_CONTAINER(global_struct->scrolledWindow), global_struct->listView);
-
-    return EXIT_SUCCESS;
+    return tree_view_widget;
 }
 
 
@@ -547,16 +541,16 @@ char *send_cart(GtkWidget *widget, GlobalStruct *global_struct) {
 
     global_struct->bundle_id = create_bundle(global_struct->token);
 
-    if(global_struct->bundle_id == 0){
+    if (global_struct->bundle_id == 0) {
         // error
         return NULL;
     }
 
     // Iterate trough the GtkTreeModel, aka the list's rows
-    gtk_tree_model_foreach(GTK_TREE_MODEL(global_struct->listStore), get_product_from_model, global_struct);
+    gtk_tree_model_foreach(GTK_TREE_MODEL(global_struct->list_store), get_product_from_model, global_struct);
 
     // TODO: Handle success
-return NULL;
+    return NULL;
 }
 
 /*
@@ -678,7 +672,7 @@ gboolean get_product_from_model(GtkTreeModel *model, GtkTreePath *path, GtkTreeI
     return FALSE;
 }
 
-int send_product(GlobalStruct* global_struct, product product) {
+int send_product(GlobalStruct *global_struct, product product) {
 
 //    struct GlobalStruct *my_struct = *global_struct;
 
@@ -709,7 +703,8 @@ int send_product(GlobalStruct* global_struct, product product) {
     };
 
     // TODO: Handle "expiration_date"
-    sprintf(body, "name=%s&barcode=%ld&quantity=%ld&bundle_id=%d&expiration_date=2019-07-23", product.name, product.barcode, product.quantity, global_struct->bundle_id);
+    sprintf(body, "name=%s&barcode=%ld&quantity=%ld&bundle_id=%d&expiration_date=2019-07-23", product.name,
+            product.barcode, product.quantity, global_struct->bundle_id);
 
     CURL *curl_handle;
 
