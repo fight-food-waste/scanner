@@ -46,6 +46,8 @@ struct write_result {
 
 GlobalStruct *init_global_struct(GtkBuilder *);
 
+gboolean handle_keyboard_login(GtkWidget *widget, GdkEventKey *event, gpointer user_data);
+
 int AddProduct(GlobalStruct *global_struct, product product);
 
 int get_product_info(product *product);

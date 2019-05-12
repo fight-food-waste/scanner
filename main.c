@@ -77,6 +77,13 @@ int main(int argc, char **argv) {
     g_signal_connect(returnCart, "clicked", (GCallback) ReturnCart, global_struct);
     g_signal_connect(validecartButton, "clicked", (GCallback) send_cart, global_struct);
 
+    /*
+     * Validate login form by pressing enter
+     */
+    // First, enable the login window (a GtkWidget) to receive key press events
+    gtk_widget_add_events(global_struct->mainWindow, GDK_KEY_PRESS_MASK);
+    // Then, for each keypress in this widget, call handle_keyboard_login()
+    g_signal_connect (G_OBJECT (global_struct->mainWindow), "key_press_event", G_CALLBACK (handle_keyboard_login), global_struct);
 
     gtk_widget_show_all(global_struct->mainWindow);
 
