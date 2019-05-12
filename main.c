@@ -1,10 +1,12 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
+#include <tgmath.h>
+
 #include <gtk/gtk.h>
 #include <glib/gprintf.h>
-#include <string.h>
+
 #include "functions.h"
-#include <tgmath.h>
 
 int main(int argc, char **argv) {
 
@@ -19,29 +21,36 @@ int main(int argc, char **argv) {
     GtkWidget *tree_view_widget = NULL;
     GtkScrolledWindow *cart_scrolled_window = NULL;
 
+    // Mandatory GTK init
     gtk_init(&argc, &argv);
 
+    // Create new GtkBuild object
     builder = gtk_builder_new();
+    // Parse GtkBuilder UI definition from gui.glade and merge it with the current contents of `builder`
     gtk_builder_add_from_file(builder, "../gui.glade", &error);
-
-    global_struct = init_global_struct(builder);
-
     if (error) {
         gint code = error->code;
+
         g_printerr("%s\n", error->message);
+
         g_error_free(error);
+
         return code;
     }
 
-    GtkCssProvider *provider = gtk_css_provider_new();
-    GdkDisplay *display = gdk_display_get_default();
-    GdkScreen * screen = gdk_display_get_default_screen(display);
-    gtk_style_context_add_provider_for_screen(screen, GTK_STYLE_PROVIDER (provider), GTK_STYLE_PROVIDER_PRIORITY_USER);
-    GFile *css_file = g_file_new_for_path("../css/global.css");
-    gtk_css_provider_load_from_file(provider, css_file, &error);
-    g_object_unref(css_file);
 
-    gtk_builder_connect_signals(builder, NULL);
+    // Init the global struct which will store data throughout the lifetime of the app
+    global_struct = init_global_struct(builder);
+
+    // Load CSS
+    GtkCssProvider *css_provider = gtk_css_provider_new();
+    GdkDisplay *display = gdk_display_get_default();
+    GdkScreen *screen = gdk_display_get_default_screen(display);
+    gtk_style_context_add_provider_for_screen(screen, GTK_STYLE_PROVIDER (css_provider),
+                                              GTK_STYLE_PROVIDER_PRIORITY_USER);
+    GFile *css_file = g_file_new_for_path("../css/global.css");
+    gtk_css_provider_load_from_file(css_provider, css_file, &error);
+    g_object_unref(css_file);
 
     // Import some GTK objects from GtkBuilder
     validateButton = GTK_BUTTON(gtk_builder_get_object(builder, "validateButton"));
