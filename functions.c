@@ -576,6 +576,10 @@ char *send_cart(GtkWidget *widget, GlobalStruct *global_struct) {
     gtk_tree_model_foreach(GTK_TREE_MODEL(global_struct->list_store), get_product_from_model, global_struct);
 
     // TODO: Handle success
+    // TODO: Close bundle
+    close_bundle(global_struct->token, global_struct->bundle_id);
+
+    // TODO: Empty cart
     return NULL;
 }
 
@@ -615,6 +619,95 @@ int create_bundle(char *token) {
     curl_handle = curl_easy_init();
     curl_easy_setopt(curl_handle, CURLOPT_URL, API_ENDPOINT
             "/bundle");
+    curl_easy_setopt(curl_handle, CURLOPT_USERAGENT, "curl/7.54.0");
+    curl_easy_setopt(curl_handle, CURLOPT_HTTPHEADER, http_headers);
+    curl_easy_setopt(curl_handle, CURLOPT_CUSTOMREQUEST, "POST");
+    curl_easy_setopt(curl_handle, CURLOPT_WRITEFUNCTION, write_response); // Defines callback function
+    curl_easy_setopt(curl_handle, CURLOPT_WRITEDATA, &write_result);
+
+    curl_code = curl_easy_perform(curl_handle);
+    curl_easy_getinfo (curl_handle, CURLINFO_RESPONSE_CODE, &http_code);
+
+    curl_easy_cleanup(curl_handle);
+    curl_slist_free_all(http_headers);
+
+    printf("\n%d\n", (int) curl_code);
+
+    if (http_code == 200 && curl_code != CURLE_ABORTED_BY_CALLBACK) {
+        // Properly end string
+        data[write_result.pos] = '\0';
+
+        json_t *json_bundle;
+        json_error_t error;
+
+        json_bundle = json_loads(data, 0, &error);
+        free(data);
+
+        if (!json_bundle) {
+            fprintf(stderr, "error: on line %d: %s\n", error.line, error.text);
+            return 0;
+        }
+
+        json_unpack(json_bundle, "{s:i}", "id", &bundle_id);
+        if (!bundle_id) {
+            fprintf(stderr, "error: product.product_name was not found\n");
+            return 0;
+        }
+
+        // Free json_bundle
+        json_decref(json_bundle);
+
+        return bundle_id;
+    } else {
+        goto error;
+    }
+
+    error:
+    // Clean memory
+    if (data)
+        free(data);
+    if (curl_handle)
+        curl_easy_cleanup(curl_handle);
+    curl_global_cleanup();
+    return 0;
+}
+
+/*
+ * Close bundle on the API to make it immutable
+ */
+int close_bundle(char* token, int bundle_id) {
+    CURLcode curl_code;
+    struct curl_slist *http_headers;
+    long http_code = 0;
+
+    char token_header[100];
+    char route[100];
+
+    sprintf(token_header, "token: %s", token);
+    sprintf(route, "%s/bundle/%d/close", API_ENDPOINT, bundle_id);
+
+    http_headers = NULL;
+    // Add header to list of strings
+    http_headers = curl_slist_append(http_headers, "content-type: application/x-www-form-urlencoded");
+    http_headers = curl_slist_append(http_headers, token_header);
+
+    char *data = NULL; // HTTP document
+
+    // Final result has to be <= RESULT_SIZE
+    data = malloc(RESULT_SIZE);
+    if (!data)
+        goto error;
+
+    // Struct used to build the final result (`data`)
+    struct write_result write_result = {
+            .data = data,
+            .pos = 0
+    };
+
+    CURL *curl_handle;
+
+    curl_handle = curl_easy_init();
+    curl_easy_setopt(curl_handle, CURLOPT_URL, route);
     curl_easy_setopt(curl_handle, CURLOPT_USERAGENT, "curl/7.54.0");
     curl_easy_setopt(curl_handle, CURLOPT_HTTPHEADER, http_headers);
     curl_easy_setopt(curl_handle, CURLOPT_CUSTOMREQUEST, "POST");
