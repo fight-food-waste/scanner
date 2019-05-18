@@ -85,3 +85,5 @@ int send_product(GlobalStruct *global_struct, product product);
 GtkListStore *init_list_store();
 
 int close_bundle(char* token, int bundle_id);
+
+gboolean handle_keyboard_add_product(GtkWidget *widget, GdkEventKey *event, gpointer user_data);

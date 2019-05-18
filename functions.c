@@ -62,6 +62,22 @@ gboolean handle_keyboard_login(GtkWidget *widget, GdkEventKey *event, gpointer u
     return FALSE;
 }
 
+/*
+ * Add product to cart when return is pressed
+ */
+gboolean handle_keyboard_add_product(GtkWidget *widget, GdkEventKey *event, gpointer user_data) {
+
+    GlobalStruct *global_struct = user_data;
+
+    if (event->keyval == GDK_KEY_Return){
+
+        add_to_cart(NULL, global_struct);
+
+        return TRUE;
+    }
+    return FALSE;
+}
+
 int OpenScan(GtkWidget *widget, GlobalStruct *global_struct) {
     gtk_widget_show_all(global_struct->scanproduct);
     gtk_widget_hide(global_struct->mainWindow);
