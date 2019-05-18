@@ -592,7 +592,6 @@ char *send_cart(GtkWidget *widget, GlobalStruct *global_struct) {
     gtk_tree_model_foreach(GTK_TREE_MODEL(global_struct->list_store), get_product_from_model, global_struct);
 
     // TODO: Handle success
-    // TODO: Close bundle
     close_bundle(global_struct->token, global_struct->bundle_id);
 
     // TODO: Empty cart
