@@ -596,7 +596,7 @@ char *send_cart(GtkWidget *widget, GlobalStruct *global_struct) {
 
     // Clear cart
     gtk_list_store_clear(global_struct->list_store);
-    
+
     return NULL;
 }
 

@@ -115,11 +115,11 @@
                   <placeholder/>
                 </child>
               </object>
-            <packing>
-              <property name="expand">True</property>
-              <property name="fill">True</property>
-              <property name="position">0</property>
-            </packing>
+              <packing>
+                <property name="expand">True</property>
+                <property name="fill">True</property>
+                <property name="position">0</property>
+              </packing>
             </child>
           </object>
           <packing>
@@ -180,9 +180,6 @@
     <property name="default_height">600</property>
     <property name="icon">logo-ffw.png</property>
     <child>
-      <placeholder/>
-    </child>
-    <child>
       <object class="GtkBox" id="homeBox">
         <property name="name">homebox</property>
         <property name="visible">True</property>
@@ -216,11 +213,23 @@
           </packing>
         </child>
         <child>
+          <object class="GtkImage">
+            <property name="visible">True</property>
+            <property name="can_focus">False</property>
+            <property name="pixbuf">logo-ffw-10.png</property>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">False</property>
+            <property name="position">1</property>
+          </packing>
+        </child>
+        <child>
           <object class="GtkLabel" id="loginLabel">
             <property name="visible">True</property>
             <property name="can_focus">False</property>
             <property name="margin_top">27</property>
-            <property name="margin_bottom">48</property>
+            <property name="margin_bottom">13</property>
             <property name="hexpand">True</property>
             <property name="label" translatable="yes">Connexion</property>
             <attributes>
@@ -231,7 +240,7 @@
           <packing>
             <property name="expand">False</property>
             <property name="fill">True</property>
-            <property name="position">1</property>
+            <property name="position">2</property>
           </packing>
         </child>
         <child>
@@ -353,7 +362,7 @@
           <packing>
             <property name="expand">False</property>
             <property name="fill">True</property>
-            <property name="position">2</property>
+            <property name="position">3</property>
           </packing>
         </child>
         <child>
@@ -374,7 +383,7 @@
           <packing>
             <property name="expand">True</property>
             <property name="fill">True</property>
-            <property name="position">3</property>
+            <property name="position">4</property>
           </packing>
         </child>
         <style>
@@ -400,6 +409,7 @@
           <object class="GtkLabel" id="scanLabel">
             <property name="visible">True</property>
             <property name="can_focus">False</property>
+            <property name="valign">center</property>
             <property name="margin_top">30</property>
             <property name="margin_bottom">37</property>
             <property name="hexpand">True</property>
@@ -418,6 +428,9 @@
             <property name="fill">True</property>
             <property name="position">0</property>
           </packing>
+        </child>
+        <child>
+          <placeholder/>
         </child>
         <child>
           <object class="GtkBox" id="barrecodeBox">
@@ -464,7 +477,7 @@
           <packing>
             <property name="expand">False</property>
             <property name="fill">True</property>
-            <property name="position">1</property>
+            <property name="position">2</property>
           </packing>
         </child>
         <child>
@@ -511,7 +524,7 @@
           <packing>
             <property name="expand">False</property>
             <property name="fill">True</property>
-            <property name="position">2</property>
+            <property name="position">3</property>
           </packing>
         </child>
         <child>
@@ -530,7 +543,7 @@
           <packing>
             <property name="expand">False</property>
             <property name="fill">True</property>
-            <property name="position">3</property>
+            <property name="position">4</property>
           </packing>
         </child>
         <child>
@@ -549,7 +562,7 @@
           <packing>
             <property name="expand">False</property>
             <property name="fill">True</property>
-            <property name="position">4</property>
+            <property name="position">5</property>
           </packing>
         </child>
         <style>
