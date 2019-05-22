@@ -100,21 +100,14 @@ void *ReturnCart(GtkWidget *widget, GlobalStruct *global_struct) {
     return EXIT_SUCCESS;
 }
 
-
-int ErrorLog(GtkLabel *authError, GlobalStruct *global_struct) {
-    const gchar *errorAuth = "Login ou mot de passe invalide";
-    gtk_label_set_text(global_struct->authError, errorAuth);
-
-    return EXIT_SUCCESS;
-}
-
 int GetLog(GtkWidget *valideButton, GlobalStruct *global_struct) {
 
     const gchar *log = gtk_entry_get_text(GTK_ENTRY(global_struct->loginEntry));
     const gchar *pwd = gtk_entry_get_text(GTK_ENTRY(global_struct->pwdEntry));
 
+    CURLcode curl_code;
 
-    global_struct->token = get_token(log, pwd, global_struct);
+    global_struct->token = get_token(log, pwd, global_struct, &curl_code);
 
     if (global_struct->token) {
 
@@ -130,8 +123,19 @@ int GetLog(GtkWidget *valideButton, GlobalStruct *global_struct) {
         OpenScan(valideButton, global_struct);
 
         return EXIT_SUCCESS;
+    } else if (curl_code == CURLE_COULDNT_CONNECT) {
+        const gchar *errorAuth = "Couldn't connect to API.";
+        gtk_label_set_text(global_struct->authError, errorAuth);
+
+        return EXIT_FAILURE;
+    } else if (curl_code == CURLE_OK) {
+        const gchar *errorAuth = "Wrong credentials.";
+        gtk_label_set_text(global_struct->authError, errorAuth);
+
+        return EXIT_FAILURE;
     } else {
-        ErrorLog(global_struct->authError, global_struct);
+        const gchar *errorAuth = "Something went wrong.";
+        gtk_label_set_text(global_struct->authError, errorAuth);
 
         return EXIT_FAILURE;
     }
@@ -228,8 +232,8 @@ char *get_user_name(char *token) {
     return NULL;
 }
 
-char *get_token(const gchar *email, const gchar *password, GlobalStruct *global_struct) {
-    CURLcode curl_code;
+char *get_token(const gchar *email, const gchar *password, GlobalStruct *global_struct, CURLcode *curl_code) {
+
     struct curl_slist *http_headers;
     long http_code = 0;
     gchar *token = NULL;
@@ -266,7 +270,7 @@ char *get_token(const gchar *email, const gchar *password, GlobalStruct *global_
     curl_easy_setopt(curl_handle, CURLOPT_WRITEFUNCTION, write_response); // Defines callback function
     curl_easy_setopt(curl_handle, CURLOPT_WRITEDATA, &write_result);
 
-    curl_code = curl_easy_perform(curl_handle);
+    *curl_code = curl_easy_perform(curl_handle);
     curl_easy_getinfo (curl_handle, CURLINFO_RESPONSE_CODE, &http_code);
 
     curl_easy_cleanup(curl_handle);
@@ -274,7 +278,7 @@ char *get_token(const gchar *email, const gchar *password, GlobalStruct *global_
 
     printf("\n%d\n", (int) curl_code);
 
-    if (http_code == 200 && curl_code != CURLE_ABORTED_BY_CALLBACK) {
+    if (http_code == 200 && *curl_code != CURLE_ABORTED_BY_CALLBACK) {
         // Properly end string
         data[write_result.pos] = '\0';
 
@@ -313,7 +317,8 @@ char *get_token(const gchar *email, const gchar *password, GlobalStruct *global_
     if (data)
         free(data);
     if (curl_handle)
-        curl_easy_cleanup(curl_handle);
+//        This causes SIGABRT...
+//        curl_easy_cleanup(curl_handle);
     curl_global_cleanup();
     return NULL;
 }
