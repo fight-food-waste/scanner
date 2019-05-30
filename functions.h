@@ -10,6 +10,7 @@ struct GlobalStruct {
     GtkLabel *authError;
     GtkEntry *barrecodeEntry;
     GtkEntry *quantityEntry;
+    GtkEntry *expirationDateEntry;
     GtkWidget *cartWindow;
     GtkListStore *list_store;
     char *token;
@@ -22,6 +23,7 @@ enum {
     BARCODE_COLUMN,
     NAME_COLUMN,
     QTY_COLUMN,
+    DATE_COLUMN,
     N_COLUMNS
 };
 
@@ -34,6 +36,7 @@ struct product {
     long barcode;
     long quantity;
     char *name;
+    char *expiration_date;
 };
 
 /*

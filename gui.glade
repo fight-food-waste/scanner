@@ -528,6 +528,54 @@
           </packing>
         </child>
         <child>
+          <object class="GtkBox" id="expirationDateBox">
+            <property name="visible">True</property>
+            <property name="can_focus">False</property>
+            <property name="margin_top">26</property>
+            <property name="margin_bottom">52</property>
+            <property name="hexpand">True</property>
+            <property name="vexpand">False</property>
+            <child>
+              <object class="GtkLabel" id="expirationDateLabel">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="hexpand">True</property>
+                <property name="label" translatable="yes">Expiration Date (mm/jj/yyyy)</property>
+                <attributes>
+                  <attribute name="weight" value="ultrabold"/>
+                  <attribute name="scale" value="100"/>
+                  <attribute name="size" value="100"/>
+                </attributes>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">True</property>
+                <property name="position">0</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkEntry" id="expirationDateEntry">
+                <property name="visible">True</property>
+                <property name="can_focus">True</property>
+                <property name="halign">center</property>
+                <property name="valign">center</property>
+                <property name="hexpand">True</property>
+                <property name="vexpand">False</property>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">True</property>
+                <property name="position">1</property>
+              </packing>
+            </child>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">True</property>
+            <property name="position">2</property>
+          </packing>
+        </child>
+        <child>
           <object class="GtkButton" id="addcartButton">
             <property name="label" translatable="yes">Ajouter au panier</property>
             <property name="visible">True</property>

@@ -35,6 +35,7 @@ GlobalStruct *init_global_struct(GtkBuilder *builder) {
         global_struct->scanLabel = GTK_LABEL(gtk_builder_get_object(builder, "scanLabel"));
         global_struct->barrecodeEntry = GTK_ENTRY(gtk_builder_get_object(builder, "barrecodeEntry"));
         global_struct->quantityEntry = GTK_ENTRY(gtk_builder_get_object(builder, "quantityEntry"));
+        global_struct->expirationDateEntry = GTK_ENTRY(gtk_builder_get_object(builder, "expirationDateEntry"));
         global_struct->cartWindow = GTK_WIDGET(gtk_builder_get_object(builder, "cartWindow"));
         global_struct->list_store = init_list_store();
         global_struct->token = NULL;
@@ -335,6 +336,7 @@ int AddProduct(GlobalStruct *global_struct, product product) {
                        BARCODE_COLUMN, (glong) product.barcode,
                        NAME_COLUMN, (gchar *) product.name,
                        QTY_COLUMN, (glong) product.quantity,
+                       DATE_COLUMN, (gchar *) product.expiration_date,
                        -1);
 
     return EXIT_SUCCESS;
@@ -345,7 +347,8 @@ GtkListStore *init_list_store() {
     GtkListStore *list_store = gtk_list_store_new(N_COLUMNS,      // 3
                                                   G_TYPE_LONG,    // quantity
                                                   G_TYPE_STRING,  // name
-                                                  G_TYPE_LONG);   // barcode
+                                                  G_TYPE_LONG,    // barcode
+                                                  G_TYPE_STRING); // expiration date
 
     return list_store;
 }
@@ -357,7 +360,7 @@ GtkListStore *init_list_store() {
 GtkWidget *create_gtk_tree_view(GlobalStruct *global_struct) {
 
     // Create new empty columns
-    GtkTreeViewColumn *barcode_column, *name_column, *quantity_column;
+    GtkTreeViewColumn *barcode_column, *name_column, *quantity_column, *date_column;
     // Create a new GtkCellRendererText to render text in a cell
     GtkCellRenderer *cell_renderer = gtk_cell_renderer_text_new();
     //
@@ -373,11 +376,14 @@ GtkWidget *create_gtk_tree_view(GlobalStruct *global_struct) {
                                                            NAME_COLUMN, NULL);
     quantity_column = gtk_tree_view_column_new_with_attributes("Quantity", cell_renderer, "text",
                                                                QTY_COLUMN, NULL);
+    date_column = gtk_tree_view_column_new_with_attributes("Expiration date", cell_renderer, "text",
+                                                               DATE_COLUMN, NULL);
 
     // Append columns to the list of columns aka the GtkTreeView
     gtk_tree_view_append_column(GTK_TREE_VIEW(tree_view_widget), barcode_column);
     gtk_tree_view_append_column(GTK_TREE_VIEW(tree_view_widget), name_column);
     gtk_tree_view_append_column(GTK_TREE_VIEW(tree_view_widget), quantity_column);
+    gtk_tree_view_append_column(GTK_TREE_VIEW(tree_view_widget), date_column);
 
     return tree_view_widget;
 }
@@ -394,16 +400,15 @@ int add_to_cart(GtkWidget *widget, GlobalStruct *global_struct) {
 
     const gchar *raw_code = gtk_entry_get_text(global_struct->barrecodeEntry);
     const gchar *raw_quantity = gtk_entry_get_text(global_struct->quantityEntry);
+    const gchar *raw_expiration_date = gtk_entry_get_text(global_struct->expirationDateEntry);
 
     // strol returns the converted int as a long int, else 0 is returned.
     current_product.barcode = strtol(raw_code, &endPtr, 10);
     current_product.quantity = strtol(raw_quantity, &endPtr, 10);
+    current_product.expiration_date = (char*) raw_expiration_date;
 
-    if (current_product.barcode == 0 || current_product.quantity == 0) {
+    if (current_product.barcode == 0 || current_product.quantity == 0 || current_product.expiration_date == 0) {
         return EXIT_FAILURE;
-    } else {
-        printf("%ld\n", current_product.barcode);
-        printf("%ld\n", current_product.quantity);
     }
 
     // Add name and image_url to product struct
@@ -415,6 +420,7 @@ int add_to_cart(GtkWidget *widget, GlobalStruct *global_struct) {
         // Reset GtkEntries
         gtk_entry_set_text(global_struct->barrecodeEntry, "");
         gtk_entry_set_text(global_struct->quantityEntry, "");
+        gtk_entry_set_text(global_struct->expirationDateEntry, "");
 
         // Set focus on the barcode GtkEntry
         gtk_widget_grab_focus(GTK_WIDGET(global_struct->barrecodeEntry));
@@ -784,9 +790,7 @@ int close_bundle(char* token, int bundle_id) {
 }
 
 gboolean get_product_from_model(GtkTreeModel *model, GtkTreePath *path, GtkTreeIter *iter, gpointer user_data) {
-//    gchar *name;
     gchar *row_nb;
-//    glong quantity;
     product current_product;
 
     GlobalStruct *global_struct = user_data;
@@ -796,14 +800,13 @@ gboolean get_product_from_model(GtkTreeModel *model, GtkTreePath *path, GtkTreeI
                        BARCODE_COLUMN, &current_product.barcode,
                        NAME_COLUMN, &current_product.name,
                        QTY_COLUMN, &current_product.quantity,
+                       DATE_COLUMN, &current_product.expiration_date,
                        -1);
 
     row_nb = gtk_tree_path_to_string(path);
 
     g_print("Row %s: %ld %s\n", row_nb, current_product.quantity, current_product.name);
 
-
-    // TODO: Send product to API, with bundle id
     send_product(global_struct, current_product);
 
     // osef de row_nb en fait non ?
@@ -844,8 +847,8 @@ int send_product(GlobalStruct *global_struct, product product) {
     };
 
     // TODO: Handle "expiration_date"
-    sprintf(body, "name=%s&barcode=%ld&quantity=%ld&bundle_id=%d&expiration_date=2019-07-23", product.name,
-            product.barcode, product.quantity, global_struct->bundle_id);
+    sprintf(body, "name=%s&barcode=%ld&quantity=%ld&bundle_id=%d&expiration_date=%s", product.name,
+            product.barcode, product.quantity, global_struct->bundle_id, product.expiration_date);
 
     CURL *curl_handle;
 
@@ -879,7 +882,8 @@ int send_product(GlobalStruct *global_struct, product product) {
     if (data)
         free(data);
     if (curl_handle)
-        curl_easy_cleanup(curl_handle);
+//        This causes SIGABRT...
+//        curl_easy_cleanup(curl_handle);
     curl_global_cleanup();
     return EXIT_FAILURE;
 }
