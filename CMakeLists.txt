@@ -1,5 +1,5 @@
 # Set the name of the project
-project(hello-world C)
+project(ffw-scanner C)
 
 # Set the minimum version of cmake required to build this project
 cmake_minimum_required(VERSION 3.7)

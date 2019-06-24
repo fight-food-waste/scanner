@@ -52,21 +52,21 @@ GlobalStruct *init_global_struct(GtkBuilder *);
 
 gboolean handle_keyboard_login(GtkWidget *widget, GdkEventKey *event, gpointer user_data);
 
-int AddProduct(GlobalStruct *global_struct, product product);
+int add_product_to_cart(GlobalStruct *global_struct, product product);
 
 int get_product_info(product *product);
 
 int destroy_and_quit(GlobalStruct **);
 
-int OpenScan(GtkWidget *, GlobalStruct *);
+int open_scanner_window(GtkWidget *widget, GlobalStruct *global_struct);
 
-void *OpenCart(GtkWidget *, GlobalStruct *);
+int open_cart_window(GtkWidget *widget, GlobalStruct *global_struct);
 
-void *ReturnCart(GtkWidget *, GlobalStruct *);
+int return_to_cart(GtkWidget *widget, GlobalStruct *global_struct);
 
 GtkWidget *create_gtk_tree_view(GlobalStruct *global_struct);
 
-int GetLog(GtkWidget *valideButton, GlobalStruct *global_struct);
+int login_user(GtkWidget *valideButton, GlobalStruct *global_struct);
 
 static size_t write_response(void *buffer, size_t size, size_t nmemb, void *stream);
 
@@ -74,7 +74,7 @@ static char *http_get(const char *url);
 
 int add_to_cart(GtkWidget *addCart, GlobalStruct *global_struct);
 
-char *get_token(const gchar *email, const gchar *password, GlobalStruct *global_struct, CURLcode *curl_code);
+char *get_token(const gchar *email, const gchar *password, CURLcode *curl_code);
 
 char *get_user_name(char *token);
 
@@ -82,7 +82,7 @@ char *send_cart(GtkWidget *, GlobalStruct *);
 
 int create_bundle(char *token);
 
-gboolean get_product_from_model(GtkTreeModel *model, GtkTreePath *path, GtkTreeIter *iter, gpointer user_data);
+gboolean send_product_from_model(GtkTreeModel *model, GtkTreePath *path, GtkTreeIter *iter, gpointer user_data);
 
 int send_product(GlobalStruct *global_struct, product product);
 

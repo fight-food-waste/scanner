@@ -38,7 +38,6 @@ int main(int argc, char **argv) {
         return code;
     }
 
-
     // Init the global struct which will store data throughout the lifetime of the app
     global_struct = init_global_struct(builder);
 
@@ -71,12 +70,11 @@ int main(int argc, char **argv) {
     g_signal_connect(global_struct->scanproduct, "destroy", (GCallback) destroy_and_quit, &global_struct);
 
     // Connect buttons with callback functions
-    g_signal_connect(validateButton, "clicked", (GCallback) GetLog, global_struct);
-    g_signal_connect(showCart, "clicked", (GCallback) OpenCart, global_struct);
+    g_signal_connect(validateButton, "clicked", (GCallback) login_user, global_struct);
+    g_signal_connect(showCart, "clicked", (GCallback) open_cart_window, global_struct);
     g_signal_connect(addCart, "clicked", (GCallback) add_to_cart, global_struct);
-    g_signal_connect(returnCart, "clicked", (GCallback) ReturnCart, global_struct);
+    g_signal_connect(returnCart, "clicked", (GCallback) return_to_cart, global_struct);
     g_signal_connect(validecartButton, "clicked", (GCallback) send_cart, global_struct);
-
 
     // Validate login form by pressing enter
     // First, enable the login window (a GtkWidget) to receive key press events
