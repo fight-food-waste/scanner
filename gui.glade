@@ -21,7 +21,7 @@
             <property name="visible">True</property>
             <property name="can_focus">False</property>
             <property name="vexpand">True</property>
-            <property name="label" translatable="yes">Votre panier à collecter</property>
+            <property name="label" translatable="yes">Your cart</property>
             <attributes>
               <attribute name="font-desc" value="Trebuchet MS 38"/>
               <attribute name="weight" value="bold"/>
@@ -34,54 +34,6 @@
             <property name="expand">False</property>
             <property name="fill">True</property>
             <property name="position">0</property>
-          </packing>
-        </child>
-        <child>
-          <object class="GtkBox" id="typeBox">
-            <property name="visible">True</property>
-            <property name="can_focus">False</property>
-            <property name="vexpand">True</property>
-            <child>
-              <object class="GtkLabel" id="quantityCol">
-                <property name="visible">True</property>
-                <property name="can_focus">False</property>
-                <property name="hexpand">True</property>
-                <property name="label" translatable="yes">Quantité</property>
-                <attributes>
-                  <attribute name="weight" value="ultrabold"/>
-                  <attribute name="scale" value="100"/>
-                  <attribute name="size" value="100"/>
-                </attributes>
-              </object>
-              <packing>
-                <property name="expand">False</property>
-                <property name="fill">True</property>
-                <property name="position">0</property>
-              </packing>
-            </child>
-            <child>
-              <object class="GtkLabel" id="productCol">
-                <property name="visible">True</property>
-                <property name="can_focus">False</property>
-                <property name="hexpand">True</property>
-                <property name="label" translatable="yes">Référence</property>
-                <attributes>
-                  <attribute name="weight" value="ultrabold"/>
-                  <attribute name="scale" value="100"/>
-                  <attribute name="size" value="100"/>
-                </attributes>
-              </object>
-              <packing>
-                <property name="expand">False</property>
-                <property name="fill">True</property>
-                <property name="position">1</property>
-              </packing>
-            </child>
-          </object>
-          <packing>
-            <property name="expand">False</property>
-            <property name="fill">True</property>
-            <property name="position">1</property>
           </packing>
         </child>
         <child>
@@ -231,7 +183,7 @@
             <property name="margin_top">27</property>
             <property name="margin_bottom">13</property>
             <property name="hexpand">True</property>
-            <property name="label" translatable="yes">Connexion</property>
+            <property name="label" translatable="yes">Log in</property>
             <attributes>
               <attribute name="scale" value="100"/>
               <attribute name="size" value="200"/>
@@ -258,7 +210,7 @@
                     <property name="can_focus">False</property>
                     <property name="margin_right">6</property>
                     <property name="hexpand">True</property>
-                    <property name="label" translatable="yes">Identifiant</property>
+                    <property name="label" translatable="yes">Email</property>
                     <attributes>
                       <attribute name="weight" value="ultrabold"/>
                       <attribute name="scale" value="100"/>
@@ -304,7 +256,7 @@
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
                     <property name="hexpand">True</property>
-                    <property name="label" translatable="yes">Mot de passe</property>
+                    <property name="label" translatable="yes">Password</property>
                     <attributes>
                       <attribute name="weight" value="ultrabold"/>
                       <attribute name="scale" value="100"/>
@@ -367,7 +319,7 @@
         </child>
         <child>
           <object class="GtkButton" id="validateButton">
-            <property name="label" translatable="yes">Connexion</property>
+            <property name="label" translatable="yes">Login</property>
             <property name="name">homebutton</property>
             <property name="visible">True</property>
             <property name="can_focus">True</property>
@@ -445,7 +397,7 @@
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <property name="hexpand">True</property>
-                <property name="label" translatable="yes">Code-barre</property>
+                <property name="label" translatable="yes">Barcode</property>
                 <attributes>
                   <attribute name="weight" value="ultrabold"/>
                   <attribute name="scale" value="100"/>
@@ -492,7 +444,7 @@
                 <property name="halign">center</property>
                 <property name="margin_right">16</property>
                 <property name="hexpand">True</property>
-                <property name="label" translatable="yes">Quantité</property>
+                <property name="label" translatable="yes">Quantity</property>
                 <attributes>
                   <attribute name="weight" value="ultrabold"/>
                   <attribute name="scale" value="100"/>
@@ -540,7 +492,7 @@
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <property name="hexpand">True</property>
-                <property name="label" translatable="yes">Expiration Date (mm/jj/yyyy)</property>
+                <property name="label" translatable="yes">Expiration date</property>
                 <attributes>
                   <attribute name="weight" value="ultrabold"/>
                   <attribute name="scale" value="100"/>
@@ -555,6 +507,7 @@
             </child>
             <child>
               <object class="GtkEntry" id="expirationDateEntry">
+                <property name="placeholder-text">mm/jj/yyyy</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="halign">center</property>
@@ -577,7 +530,7 @@
         </child>
         <child>
           <object class="GtkButton" id="addcartButton">
-            <property name="label" translatable="yes">Ajouter au panier</property>
+            <property name="label" translatable="yes">Add to cart</property>
             <property name="visible">True</property>
             <property name="can_focus">True</property>
             <property name="receives_default">True</property>
@@ -596,7 +549,7 @@
         </child>
         <child>
           <object class="GtkButton" id="cartButton">
-            <property name="label" translatable="yes">Voir votre panier</property>
+            <property name="label" translatable="yes">Show cart</property>
             <property name="visible">True</property>
             <property name="can_focus">True</property>
             <property name="receives_default">True</property>
