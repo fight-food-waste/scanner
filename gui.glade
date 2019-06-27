@@ -101,7 +101,7 @@
         </child>
         <child>
           <object class="GtkButton" id="returncartButton">
-            <property name="label" translatable="yes">Retour au scan</property>
+            <property name="label" translatable="yes">Back to scanner</property>
             <property name="visible">True</property>
             <property name="can_focus">True</property>
             <property name="receives_default">True</property>
