@@ -219,7 +219,7 @@ char *get_user_name(char *token) {
 
     curl_handle = curl_easy_init();
     curl_easy_setopt(curl_handle, CURLOPT_URL, API_ENDPOINT
-            "/donor");
+            "/user");
     curl_easy_setopt(curl_handle, CURLOPT_USERAGENT, "curl/7.54.0");
     curl_easy_setopt(curl_handle, CURLOPT_HTTPHEADER, http_headers);
     curl_easy_setopt(curl_handle, CURLOPT_CUSTOMREQUEST, "GET");
