@@ -12,7 +12,7 @@
 
 #define RESULT_SIZE (256 * 1024)  /* CURL result, 256 KB*/
 #define URL_SIZE 256
-#define API_ENDPOINT "http://localhost:3000"
+#define API_ENDPOINT "https://api.fight-food-waste.com"
 
 /*
  * Clean memory and quit GTK
