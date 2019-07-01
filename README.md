@@ -6,7 +6,7 @@ This is the end-user product scanner that integrates with our API.
 
 - GTK for the GUI
 - curl for handling API requests
-- janson for handling JSON.
+- jansson for handling JSON.
 
 ## Installation
 
