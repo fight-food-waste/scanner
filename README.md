@@ -1,4 +1,4 @@
-# Fight Food Waste's product scanner
+# Fight Food Waste - Product scanner
 
 This is the end-user product scanner that integrates with our API.
 
