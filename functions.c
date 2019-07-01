@@ -26,6 +26,30 @@ int destroy_and_quit(GlobalStruct **global_struct) {
 }
 
 /*
+ * Import CSS into GTK
+ */
+void init_css() {
+    GError *error = NULL;
+
+    GtkCssProvider *css_provider = gtk_css_provider_new();
+    GdkDisplay *display = gdk_display_get_default();
+    GdkScreen *screen = gdk_display_get_default_screen(display);
+    gtk_style_context_add_provider_for_screen(screen, GTK_STYLE_PROVIDER (css_provider),
+                                              GTK_STYLE_PROVIDER_PRIORITY_USER);
+    GFile *css_file = g_file_new_for_path("../css/global.css");
+    gtk_css_provider_load_from_file(css_provider, css_file, &error);
+    g_object_unref(css_file);
+
+    if (error) {
+        gint code = error->code;
+
+        g_printerr("%s\n", error->message);
+
+        g_error_free(error);
+    }
+}
+
+/*
  * Initalize global struct
  */
 GlobalStruct *init_global_struct(GtkBuilder *builder) {

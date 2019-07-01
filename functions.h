@@ -48,6 +48,8 @@ struct write_result {
     int pos;
 };
 
+void init_css();
+
 GlobalStruct *init_global_struct(GtkBuilder *);
 
 gboolean handle_keyboard_login(GtkWidget *widget, GdkEventKey *event, gpointer user_data);
