@@ -26,8 +26,8 @@ int main(int argc, char **argv) {
 
     // Create new GtkBuild object
     builder = gtk_builder_new();
-    // Parse GtkBuilder UI definition from gui.glade and merge it with the current contents of `builder`
-    gtk_builder_add_from_file(builder, "../gui.glade", &error);
+    // Parse GtkBuilder UI definition from gui.xml and merge it with the current contents of `builder`
+    gtk_builder_add_from_file(builder, "../gui.xml", &error);
     if (error) {
         gint code = error->code;
 
