@@ -12,7 +12,7 @@
 
 #define RESULT_SIZE (256 * 1024)  /* CURL result, 256 KB*/
 #define URL_SIZE 256
-#define API_ENDPOINT "https://api.fight-food-waste.com"
+#define API_ENDPOINT "http://ffw.local/api"
 
 /*
  * Clean memory and quit GTK
@@ -219,11 +219,12 @@ char *get_user_name(char *token) {
 
     char token_header[100];
 
-    sprintf(token_header, "token: %s", token);
+    sprintf(token_header, "Authorization: Bearer %s", token);
 
     http_headers = NULL;
     // Add header to list of strings
     http_headers = curl_slist_append(http_headers, "content-type: application/x-www-form-urlencoded");
+    http_headers = curl_slist_append(http_headers, "Accept: application/json");
     http_headers = curl_slist_append(http_headers, token_header);
 
     char *data = NULL; // HTTP document
@@ -294,8 +295,6 @@ char *get_user_name(char *token) {
     // Clean memory
     if (data)
         free(data);
-    if (curl_handle)
-        curl_easy_cleanup(curl_handle);
     curl_global_cleanup();
     return NULL;
 }
@@ -313,6 +312,7 @@ char *get_token(const gchar *email, const gchar *password, CURLcode *curl_code) 
     http_headers = NULL;
     // Add header to list of strings
     http_headers = curl_slist_append(http_headers, "content-type: application/x-www-form-urlencoded");
+    http_headers = curl_slist_append(http_headers, "Accept: application/json");
 
     char body[256];
     sprintf(body, "email=%s&password=%s", email, password);
@@ -334,7 +334,7 @@ char *get_token(const gchar *email, const gchar *password, CURLcode *curl_code) 
 
     curl_handle = curl_easy_init();
     curl_easy_setopt(curl_handle, CURLOPT_URL, API_ENDPOINT
-            "/auth");
+            "/login");
     curl_easy_setopt(curl_handle, CURLOPT_POSTFIELDS, body);
     curl_easy_setopt(curl_handle, CURLOPT_USERAGENT, "curl/7.54.0");
     curl_easy_setopt(curl_handle, CURLOPT_HTTPHEADER, http_headers);
@@ -648,9 +648,6 @@ char *send_cart(GtkWidget *widget, GlobalStruct *global_struct) {
     // Iterate trough the GtkTreeModel, aka the list's rows
     gtk_tree_model_foreach(GTK_TREE_MODEL(global_struct->list_store), send_product_from_model, global_struct);
 
-    // TODO: Handle success
-    close_bundle(global_struct->token, global_struct->bundle_id);
-
     // Clear cart
     gtk_list_store_clear(global_struct->list_store);
 
@@ -668,11 +665,12 @@ int create_bundle(char *token) {
 
     char token_header[100];
 
-    sprintf(token_header, "token: %s", token);
+    sprintf(token_header, "Authorization: Bearer %s", token);
 
     http_headers = NULL;
     // Add header to list of strings
     http_headers = curl_slist_append(http_headers, "content-type: application/x-www-form-urlencoded");
+    http_headers = curl_slist_append(http_headers, "Accept: application/json");
     http_headers = curl_slist_append(http_headers, token_header);
 
     char *data = NULL; // HTTP document
@@ -692,7 +690,7 @@ int create_bundle(char *token) {
 
     curl_handle = curl_easy_init();
     curl_easy_setopt(curl_handle, CURLOPT_URL, API_ENDPOINT
-            "/bundle");
+            "/bundles");
     curl_easy_setopt(curl_handle, CURLOPT_USERAGENT, "curl/7.54.0");
     curl_easy_setopt(curl_handle, CURLOPT_HTTPHEADER, http_headers);
     curl_easy_setopt(curl_handle, CURLOPT_CUSTOMREQUEST, "POST");
@@ -738,55 +736,8 @@ int create_bundle(char *token) {
     // Clean memory
     if (data)
         free(data);
-    if (curl_handle)
-        curl_easy_cleanup(curl_handle);
     curl_global_cleanup();
     return 0;
-}
-
-/*
- * Close bundle on the API to make it immutable
- */
-int close_bundle(char *token, int bundle_id) {
-    CURLcode curl_code;
-    struct curl_slist *http_headers;
-    long http_code = 0;
-
-    char token_header[100];
-    char route[100];
-
-    sprintf(token_header, "token: %s", token);
-    sprintf(route, "%s/bundle/%d/close", API_ENDPOINT, bundle_id);
-
-    http_headers = NULL;
-    // Add header to list of strings
-    http_headers = curl_slist_append(http_headers, "content-type: application/x-www-form-urlencoded");
-    http_headers = curl_slist_append(http_headers, token_header);
-
-    CURL *curl_handle;
-
-    curl_handle = curl_easy_init();
-    curl_easy_setopt(curl_handle, CURLOPT_URL, route);
-    curl_easy_setopt(curl_handle, CURLOPT_USERAGENT, "curl/7.54.0");
-    curl_easy_setopt(curl_handle, CURLOPT_HTTPHEADER, http_headers);
-    curl_easy_setopt(curl_handle, CURLOPT_CUSTOMREQUEST, "POST");
-
-    curl_code = curl_easy_perform(curl_handle);
-    curl_easy_getinfo (curl_handle, CURLINFO_RESPONSE_CODE, &http_code);
-
-    curl_easy_cleanup(curl_handle);
-    curl_slist_free_all(http_headers);
-
-    if (http_code == 200 && curl_code != CURLE_ABORTED_BY_CALLBACK) {
-        return EXIT_SUCCESS;
-    } else {
-        goto error;
-    }
-
-    error:
-    if (curl_handle)
-        curl_global_cleanup();
-    return EXIT_FAILURE;
 }
 
 /*
@@ -822,10 +773,11 @@ int send_product(GlobalStruct *global_struct, product product) {
     char body[256];
 
     char token_header[100];
-    sprintf(token_header, "token: %s", global_struct->token);
+    sprintf(token_header, "Authorization: Bearer %s", global_struct->token);
 
     // Add header to list of strings
     http_headers = curl_slist_append(http_headers, "content-type: application/x-www-form-urlencoded");
+    http_headers = curl_slist_append(http_headers, "Accept: application/json");
     http_headers = curl_slist_append(http_headers, token_header);
 
     sprintf(body, "name=%s&barcode=%ld&quantity=%ld&bundle_id=%d&expiration_date=%s", product.name,
@@ -835,7 +787,7 @@ int send_product(GlobalStruct *global_struct, product product) {
 
     curl_handle = curl_easy_init();
     curl_easy_setopt(curl_handle, CURLOPT_URL, API_ENDPOINT
-            "/product");
+            "/products");
     curl_easy_setopt(curl_handle, CURLOPT_POSTFIELDS, body);
     curl_easy_setopt(curl_handle, CURLOPT_USERAGENT, "curl/7.54.0");
     curl_easy_setopt(curl_handle, CURLOPT_HTTPHEADER, http_headers);

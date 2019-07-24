@@ -64,6 +64,7 @@ int main(int argc, char **argv) {
     // Connect buttons with callback functions
     g_signal_connect(validateButton, "clicked", (GCallback) login_user, global_struct);
     g_signal_connect(showCart, "clicked", (GCallback) open_cart_window, global_struct);
+    g_signal_connect(addCart, "clicked", (GCallback) add_to_cart, global_struct);
     g_signal_connect(returnCart, "clicked", (GCallback) return_to_cart, global_struct);
     g_signal_connect(validecartButton, "clicked", (GCallback) send_cart, global_struct);
 
